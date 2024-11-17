@@ -32,6 +32,8 @@ class Drawable{
 		int rows;
 		int cols;
 		int scale_default = 1;
+		int current_pos_x;
+		int current_pos_y;
 	public:
 		Drawable(vector<vector<char>> image){
 
@@ -45,12 +47,13 @@ class Drawable{
 		Drawable(vector<vector<char>> image, int rows, int cols, int scale_default){
 
 		}
+
 		/*
 		Method Name: draw
 		Parameters:
 		x = x-coordinate to place the image.
 		y = y-coordinate to place the image.
-		scale = amount to compress the image. If there is a majority symbol in the ASCII art, 
+		scale = amount to compress the image. If there is a majority symbol in the ASCII art, it is the value of the pixel - otherwise it is a fixed arbitrary symbol among those present.
 		rotation = a percent to rotate by. The method snaps this to a multiple of 0.25 (so a 90 degree turn) for ASCII reasons.
 		flip = whether the image is flipped.
 		*/
@@ -58,10 +61,30 @@ class Drawable{
 			int new_rotate = 
 		}
 
+		/*
+		Method Name: load_points
+		Parameters:
+		points = a vector of [x, y] points.
+		
+		scale_factor = amount to compress the image. If there is a majority symbol in the ASCII art, it is the value of the pixel - otherwise it is a fixed arbitrary symbol among those present.
+		flip = whether the image is flipped.
+		*/
+		bool load_points(vector<int[2]> points, float delay, int scale_factor, bool flip){
+
+		}
+
+		bool compute_splines(vector<int[2]> points, vector<int[2]> momenta, vector<int[2]> accels){
+
+		}
 
 }
 
+
+
 class Dancer{ //Not to be confused with Dancers, this models each individual dancer, whereas Dancers models the whole system of Dancers
+	private:
+		float momentum = 0;
+		direction = ;
 	public:
 		Dancer(std::string name){
 			this->name = name;
