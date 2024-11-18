@@ -7,7 +7,7 @@
 // For now, I'll only be modelling dances in a hands-four, which doesn't leave that hands-four. That is, I'm discounting triple minors, magpie dances, squares, etc.
 // Beckett will be added as an option now but inoperative, and then I'll implement Beckett.
 
-class Output{
+class Output{ /* Here, we use the Singleton design pattern. */
 	private:
 		// EXPERIMENTAL VALUES FOR MY DISPLAY
 		int console_width = 40;
@@ -15,16 +15,24 @@ class Output{
 
 		char[][]
 
+		Output the_singleton_object;
+
+		Output(int width, int height){
+			
+		}
+
 	public:
-		Output(){
-
+		static Output initialize_or_return_singleton(){
+			initialize_or_return_singleton(this->console_width, this->console_height);
 		}
-		Output(int width){
+		static Output initialize_or_return_singleton(int width, int height){
+			if(!the_singleton_object){
 
+			}
 		}
+		
 
 }
-
 
 class Drawable{
 	private:
@@ -65,7 +73,7 @@ class Drawable{
 		Method Name: load_points
 		Parameters:
 		points = a vector of [x, y] points.
-		
+
 		scale_factor = amount to compress the image. If there is a majority symbol in the ASCII art, it is the value of the pixel - otherwise it is a fixed arbitrary symbol among those present.
 		flip = whether the image is flipped.
 		*/
@@ -79,7 +87,19 @@ class Drawable{
 
 }
 
+class PlayfordDance : public Dance{
+	private:
 
+	public:
+		 
+}
+
+class Dance{
+	private:
+
+	public:
+
+}
 
 class Dancer{ //Not to be confused with Dancers, this models each individual dancer, whereas Dancers models the whole system of Dancers
 	private:
