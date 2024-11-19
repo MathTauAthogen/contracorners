@@ -3,6 +3,11 @@
 #include <string>
 #include <map>
 #include <vector>
+#include<unordered_map>
+#include<queue>
+#include<cmath>
+
+using namespace std;
 
 // For now, I'll only be modelling dances in a hands-four, which doesn't leave that hands-four. That is, I'm discounting triple minors, magpie dances, squares, etc.
 // Beckett will be added as an option now but inoperative, and then I'll implement Beckett.
@@ -32,21 +37,109 @@ int experimental_width = 40;
 int experimental_height = 50;
 unordered_map<char, std::string> color_codes = {
 	{'w', ""},{'b', ""},{'u', ""},{'g', ""}
-}
+};
+
+class Frame{
+	private:
+		int frame_width = experimental_width;
+		int frame_height = experimental_height;
+		unordered_map<std::string, char> rows[][]; // This is an array of, for each pixel, a hashmap with keys "value", "bg_color", "fg_color", and etc, among other properties, which are used in the Outputting.
+
+		bool check_valid_pixel(unordered_map<std::string, char> pixel){
+			if(!pixel.contains("value") || !pixel.contains("bg_color") || !pixel.contains("fg_color")){
+				return false;
+			}
+			if(!color_codes.contains(pixel["bg_color"]) || !color_codes.contains(pixel["fg_color"])){
+				return false;
+			}
+			return true;
+		}
+
+		unordered_map<std::string, char> make_default_pixel(){
+			unordered_map<std::string, char> temp = unordered_map<std::string, char>();
+			temp.insert(make_pair("value", ' '));
+			temp.insert(make_pair("bg_color", 'w'));
+			temp.insert(make_pair("fg_color", 'b'));
+			return temp;
+		}
+
+	public:
+		Frame(int width = frame_width, int height = frame_height){
+			rows = new unordered_map<std::string, char>[width][height];
+			for(int i = 0; i < width; i++){
+				for(int j = 0; j < height; j++){
+					rows[i][j] = make_default_pixel();
+				}
+			}
+		}
+
+		int get_width(){
+			return this->frame_width;
+		}
+
+		int get_height(){
+			return this->frame_height;
+		}
+
+		unordered_map<std::string, char>[][] get_rows(){
+			return rows;
+		}
+
+		bool change_pixel(unordered_map<std::string, char> pixel, int ind_x, int ind_y){
+			if(ind_x < 0 || ind_y < 0 || ind_x >= this->frame_width || ind_y >= this->frame_height || !check_valid_pixel(pixel)){
+				return false;
+			}
+			rows[ind_x][ind_y] = pixel;
+			return true;
+		}
+
+		pair<bool, Frame> mergeFrames(Frame frame1, Frame frame2){// We do this inplace on frame1, as we are passing by value.
+			if(frame1.get_width() != frame2.get_width() || frame1.get_height() != frame2.get_height()){
+				return make_pair(false, Frame());
+			}
+			else{
+				unordered_map<std::string, char>[][] frame2_rows = frame2.get_rows();
+				for(int i = 0; i < frame1.get_width(); i ++){
+					for(int j = 0; j < frame1.get_height(); j++){
+						if(frame2_rows[i][j]["value"] != ' '){
+							frame1.change_pixel(frame2_rows[i][j], i, j);
+						}
+					}
+				}
+				return make_pair(true, frame1);
+			}	
+		}
+		bool merge_and_assign(Frame frame){
+			if(frame.get_width() != frame_width || frame.get_height() != frame_height){
+				return false;
+			}
+			else{
+				unordered_map<std::string, char>[][] frame_rows = frame.get_rows();
+				for(int i = 0; i < frame_width; i ++){
+					for(int j = 0; j < frame_height; j++){
+						if(frame_rows[i][j]["value"] != ' '){
+							change_pixel(frame_rows[i][j], i, j);
+						}
+					}
+				}
+				return true;
+			}
+		}
+};
 
 class Output{ /* Here, we use the Singleton design pattern. */
 	private:
 		// EXPERIMENTAL VALUES FOR MY DISPLAY
-		int console_width = experimental_width;
-		int console_height = experimental_height;
+		static int console_width = experimental_width;
+		static int console_height = experimental_height;
 		Output(int width, int height){
 			this->console_width = width;
 			this->console_height = height;
 		}
-		static Output theSingletonObject;
+		static Output* theSingletonObject;
 	public:
-		static Output initialize_or_return_singleton(int width = this->console_width, int height = this->console_height){
-			if(!theSingletonObject){
+		static Output* initialize_or_return_singleton(int width = console_width, int height = console_height){
+			if(theSingletonObject == nullptr){
 				theSingletonObject = new Output(width, height);
 			}
 			return theSingletonObject;
@@ -69,95 +162,16 @@ class Output{ /* Here, we use the Singleton design pattern. */
 			}
 			return true;
 		}
-}
+};
 
-class Frame{
+class MovingDrawable{
 	private:
-		int width = experimental_width;
-		int height = experimental_height;
-		unordered_map<std::string, char> rows[][]; // This is an array of, for each pixel, a hashmap with keys "value", "bg_color", "fg_color", and etc, among other properties, which are used in the Outputting.
-
-		bool check_valid_pixel(unordered_map<std::string, char> pixel){
-			if(!pixel.contains("value") || !pixel.contains("bg_color") || !pixel.contains("fg_color")){
-				return false;
-			}
-			if(!color_codes.contains(pixel["bg_color"]) || !color_codes.contains(pixel["fg_color"])){
-				return false;
-			}
-			return true;
-		}
-
-		unordered_map<std::string, char> make_default_pixel(){
-			unordered_map<std::string, char> temp = new unordered_map<std::string, char>();
-			temp.insert(make_pair("value", ' '));
-			temp.insert(make_pair("bg_color", 'w'));
-			temp.insert(make_pair("fg_color", 'b'));
-			return temp;
-		}
 
 	public:
-		Frame(int width = this->width, int height = this->height){
-			rows = new unordered_map<std::string, char>[width][height];
-			for(int i = 0; i < width; i++){
-				for(int j = 0; j < height; j++){
-					rows[i][j] = make_default_pixel();
-				}
-			}
-		}
+		MovingDrawable(){
 
-		int get_width(){
-			return this->width;
 		}
-
-		int get_height(){
-			return this->height;
-		}
-
-		unordered_map<std::string, char>[][] get_rows(){
-			return rows;
-		}
-
-		bool change_pixel(unordered_map<std::string, char> pixel, int ind_x, int ind_y){
-			if(ind_x < 0 || ind_y < 0 || ind_x >= this->width || ind_y >= this->height || !check_valid_pixel(pixel)){
-				return false;
-			}
-			rows[ind_x][ind_y] = pixel;
-			return true;
-		}
-
-		pair<bool, Frame> mergeFrames(Frame frame1, Frame frame2){// We do this inplace on frame1, as we are passing by value.
-			if(frame1.get_width() != frame2.get_width() || frame1.get_height() != frame2.get_height()){
-				return <false, Frame()>;
-			}
-			else{
-				unordered_map<std::string, char>[][] frame2_rows = frame2.get_rows();
-				for(int i = 0; i < frame1.get_width(); i ++){
-					for(int j = 0; j < frame1.get_height(); j++){
-						if(frame2_rows[i][j]["value"] != ' '){
-							frame1.change_pixel(frame2_rows[i][j], i, j);
-						}
-					}
-				}
-				return frame1;
-			}	
-		}
-		bool merge_and_assign(Frame frame){
-			if(frame.get_width() != width || frame.get_height() != height){
-				return false;
-			}
-			else{
-				unordered_map<std::string, char>[][] frame_rows = frame.get_rows();
-				for(int i = 0; i < width; i ++){
-					for(int j = 0; j < height; j++){
-						if(frame_rows[i][j]["value"] != ' '){
-							change_pixel(frame_rows[i][j], i, j);
-						}
-					}
-				}
-				return true;
-			}
-		}
-}
+};
 
 class MovingFrame{
 	private:
@@ -176,16 +190,7 @@ class MovingFrame{
 		void start(){
 
 		}
-}
-
-class MovingDrawable{
-	private:
-
-	public:
-		MovingDrawable(){
-
-		}
-}
+};
 
 class Drawable{
 	private:
@@ -221,7 +226,7 @@ class Drawable{
 		*/
 		bool draw(Frame& frame, int x, int y, int scale, float rotation, bool flip){
 
-			int new_rotate = 
+			int new_rotate = round(4 * rotation)/4;
 		}
 
 		/*
@@ -240,47 +245,20 @@ class Drawable{
 
 		}
 
-}
+};
 
 /* This should be a visitor to the Dance class, which  */
-class
-
-
-class PlayfordDance : public Dance{
-	private:
-
-	public:
-		 
-}
-
-class Dance{
-	private:
-		Dancers theDancers;
-	public:
-	Dance(){
-		theDancers = new Dancers();
-	}
-
-}
+//class
 
 class Dancer{ //Not to be confused with Dancers, this models each individual dancer, whereas Dancers models the whole system of Dancers
 	private:
 		float momentum = 0;
-		direction = ;
+		//direction = ;
 	public:
 		Dancer(std::string name){
 			this->name = name;
 		}
 		std::string name;
-
-};
-
-
-class HandsFour{
-	public:
-
-
-
 
 };
 
@@ -315,12 +293,37 @@ class Dancers{
 		}
 
 		vector<std::string[2]> get_names(){
-
+			return names;
 		};
 
 		std::string[2] get_names(int couple_number){
 
 		};
+};
+
+class Dance{
+	private:
+		Dancers theDancers;
+	public:
+	Dance(){
+		theDancers = Dancers();
+	}
+
+};
+
+class HandsFour{
+	public:
+
+
+
+
+};
+
+class PlayfordDance : public Dance{
+	private:
+
+	public:
+		 
 };
 
 int main ()
@@ -334,13 +337,23 @@ int main ()
 		return 0;
 	};
 
-	std::map<std::string, std::string> dance_moves = {
-		{"",""},
-		{"",""},
-		{"",""}
+	//std::map<std::string, std::string> dance_moves = {
+	//	{"",""},
+	//	{"",""},
+	//	{"",""}
+	//};
+
+	vector<std::string[2]> dancer_names = {
+		{"Holly", "Jolly"},
+		{"Molly", "Polly"},
+		{"Dolly", "Lolly"},
 	};
+
 	Dancers dancers = Dancers();
-	for (int i = 0; i < dancers.names.size(); i ++){
-		std::cout << dancers.names[i] << "\n";
+	for(auto i : dancer_names){
+		dancers.add_to_set(i);
+	}
+	for (int i = 0; i < dancers.get_names().size(); i ++){
+		std::cout << dancers.get_names()[i] << "\n";
 	}
 };
