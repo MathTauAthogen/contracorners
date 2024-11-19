@@ -27,43 +27,155 @@ Output can garbage collect its own Frames if asked, so we needn't worry about th
 
 */
 
+// EXPERIMENTAL VALUES FOR MY DISPLAY
+int experimental_width = 40;
+int experimental_height = 50;
+unordered_map<char, std::string> color_codes = {
+	{'w', ""},{'b', ""},{'u', ""},{'g', ""}
+}
+
 class Output{ /* Here, we use the Singleton design pattern. */
 	private:
 		// EXPERIMENTAL VALUES FOR MY DISPLAY
-		int console_width = 40;
-		int console_height = 50;
+		int console_width = experimental_width;
+		int console_height = experimental_height;
 		Output(int width, int height){
-			
+			this->console_width = width;
+			this->console_height = height;
 		}
 		static Output theSingletonObject;
 	public:
-		static Output initialize_or_return_singleton(){
-			initialize_or_return_singleton(this->console_width, this->console_height);
-		}
-		static Output initialize_or_return_singleton(int width, int height){
+		static Output initialize_or_return_singleton(int width = this->console_width, int height = this->console_height){
 			if(!theSingletonObject){
+				theSingletonObject = new Output(width, height);
+			}
+			return theSingletonObject;
 
+		}
+		static bool drawFrame(Frame* frame){
+			if(frame == nullptr){
+				return false;
+			}
+			else{
+				for(auto i : frame->get_rows()){
+					cout << i << endl;
+				}
+				return true;
 			}
 		}
-		static Output drawFrame(){
-
+		static bool drawFrame(Frame frame){
+			for(auto i : frame.get_rows()){
+				cout << i << endl;
+			}
+			return true;
 		}
 }
 
 class Frame{
 	private:
+		int width = experimental_width;
+		int height = experimental_height;
+		unordered_map<std::string, char> rows[][]; // This is an array of, for each pixel, a hashmap with keys "value", "bg_color", "fg_color", and etc, among other properties, which are used in the Outputting.
+
+		bool check_valid_pixel(unordered_map<std::string, char> pixel){
+			if(!pixel.contains("value") || !pixel.contains("bg_color") || !pixel.contains("fg_color")){
+				return false;
+			}
+			if(!color_codes.contains(pixel["bg_color"]) || !color_codes.contains(pixel["fg_color"])){
+				return false;
+			}
+			return true;
+		}
+
+		unordered_map<std::string, char> make_default_pixel(){
+			unordered_map<std::string, char> temp = new unordered_map<std::string, char>();
+			temp.insert(make_pair("value", ' '));
+			temp.insert(make_pair("bg_color", 'w'));
+			temp.insert(make_pair("fg_color", 'b'));
+			return temp;
+		}
 
 	public:
-		Frame(){
+		Frame(int width = this->width, int height = this->height){
+			rows = new unordered_map<std::string, char>[width][height];
+			for(int i = 0; i < width; i++){
+				for(int j = 0; j < height; j++){
+					rows[i][j] = make_default_pixel();
+				}
+			}
+		}
 
+		int get_width(){
+			return this->width;
+		}
+
+		int get_height(){
+			return this->height;
+		}
+
+		unordered_map<std::string, char>[][] get_rows(){
+			return rows;
+		}
+
+		bool change_pixel(unordered_map<std::string, char> pixel, int ind_x, int ind_y){
+			if(ind_x < 0 || ind_y < 0 || ind_x >= this->width || ind_y >= this->height || !check_valid_pixel(pixel)){
+				return false;
+			}
+			rows[ind_x][ind_y] = pixel;
+			return true;
+		}
+
+		pair<bool, Frame> mergeFrames(Frame frame1, Frame frame2){// We do this inplace on frame1, as we are passing by value.
+			if(frame1.get_width() != frame2.get_width() || frame1.get_height() != frame2.get_height()){
+				return <false, Frame()>;
+			}
+			else{
+				unordered_map<std::string, char>[][] frame2_rows = frame2.get_rows();
+				for(int i = 0; i < frame1.get_width(); i ++){
+					for(int j = 0; j < frame1.get_height(); j++){
+						if(frame2_rows[i][j]["value"] != ' '){
+							frame1.change_pixel(frame2_rows[i][j], i, j);
+						}
+					}
+				}
+				return frame1;
+			}	
+		}
+		bool merge_and_assign(Frame frame){
+			if(frame.get_width() != width || frame.get_height() != height){
+				return false;
+			}
+			else{
+				unordered_map<std::string, char>[][] frame_rows = frame.get_rows();
+				for(int i = 0; i < width; i ++){
+					for(int j = 0; j < height; j++){
+						if(frame_rows[i][j]["value"] != ' '){
+							change_pixel(frame_rows[i][j], i, j);
+						}
+					}
+				}
+				return true;
+			}
 		}
 }
 
 class MovingFrame{
 	private:
-		vector<int> DrawableQueue;
-	public:
+		queue<MovingDrawable*> MovingDrawableQueue;
 		
+	public:
+		MovingFrame(vector<MovingDrawable*> drawables){
+
+		}
+		MovingFrame(queue<MovingDrawable*> drawables){
+
+		}
+		MovingFrame(){
+			// In this case, we use an empty queue. We wait for the start signal.
+		}
+		void start(){
+
+		}
 }
 
 class MovingDrawable{
@@ -101,13 +213,14 @@ class Drawable{
 		Method Name: draw
 		Description: 
 		Parameters:
-		x = x-coordinate to place the image.
-		y = y-coordinate to place the image.
+		x = x-coordinate to place the image, which is the top left corner.
+		y = y-coordinate to place the image, which is the top left corner.
 		scale = amount to compress the image. If there is a majority symbol in the ASCII art, it is the value of the pixel - otherwise it is a fixed arbitrary symbol among those present.
 		rotation = a percent to rotate by. The method snaps this to a multiple of 0.25 (so a 90 degree turn) for ASCII reasons.
 		flip = whether the image is flipped.
 		*/
-		bool draw(int x, int y, int scale, float rotation, bool flip){
+		bool draw(Frame& frame, int x, int y, int scale, float rotation, bool flip){
+
 			int new_rotate = 
 		}
 
@@ -173,9 +286,10 @@ class HandsFour{
 
 class Dancers{
 	private:
-		std::map<std::string, int> positions = {
-		};
-	protected:
+		//std::map<std::string, int> positions = {
+		//};
+
+		bool is_running = false;
 		std::vector<std::string[2]> names;
 		int number_of_couples = 0;
 		const int maximum_couples = -1; // We don't expect for a given set the maximum number of couples to change.
@@ -192,10 +306,18 @@ class Dancers{
 					return false;
 				}
 			}
+			names.push_back(who);
+			stop_if_running();
 		};
+
+		bool stop_if_running(){
+
+		}
+
 		vector<std::string[2]> get_names(){
 
 		};
+
 		std::string[2] get_names(int couple_number){
 
 		};
@@ -222,4 +344,3 @@ int main ()
 		std::cout << dancers.names[i] << "\n";
 	}
 };
-
