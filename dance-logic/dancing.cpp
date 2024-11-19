@@ -15,7 +15,8 @@ class Output{ /* Here, we use the Singleton design pattern. */
 
 		char[][]
 
-		Output the_singleton_object;
+	protected:
+		static Output theSingletonObject;
 
 		Output(int width, int height){
 			
@@ -26,7 +27,7 @@ class Output{ /* Here, we use the Singleton design pattern. */
 			initialize_or_return_singleton(this->console_width, this->console_height);
 		}
 		static Output initialize_or_return_singleton(int width, int height){
-			if(!the_singleton_object){
+			if(!theSingletonObject){
 
 			}
 		}
@@ -87,6 +88,10 @@ class Drawable{
 
 }
 
+/* This should be a visitor to the Dance class, which  */
+class
+
+
 class PlayfordDance : public Dance{
 	private:
 
@@ -96,8 +101,11 @@ class PlayfordDance : public Dance{
 
 class Dance{
 	private:
-
+		Dancers theDancers;
 	public:
+	Dance(){
+		theDancers = new Dancers();
+	}
 
 }
 
@@ -123,21 +131,38 @@ class HandsFour{
 };
 
 class Dancers{
-	public:
-		Dancers(){
-		        this->names = {"Holly", "Jolly", "Molly", "Polly", "Dolly", "Lolly"};
-		};
-		std::vector<std::string> names;
 	private:
 		std::map<std::string, int> positions = {
+		};
+	protected:
+		std::vector<std::string[2]> names;
+		int number_of_couples = 0;
+		const int maximum_couples = -1; // We don't expect for a given set the maximum number of couples to change.
+	public:
+		Dancers(){
+		        //this->names = {"Holly", "Jolly", "Molly", "Polly", "Dolly", "Lolly"};
+		};
+		bool
+		bool add_to_set(std::string[2] who){
+			if(this->maximum_couples != -1){
+				if(this->number_of_couples < this->maximum_couples){
+
+				}
+			}
+		};
+		vector<std::string[2]> get_names(){
+
+		};
+		std::string[2] get_names(int couple_number){
+
 		};
 };
 
 int main ()
 {
 
-	std::string filename{"params.txt"};
-	std::fstream s{filename};
+	std::string filename = "params.txt";
+	std::fstream s = filename;
 
 	if (!s.is_open()){
 		std::cout << "Failed to open!\n";
