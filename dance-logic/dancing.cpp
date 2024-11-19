@@ -7,21 +7,35 @@
 // For now, I'll only be modelling dances in a hands-four, which doesn't leave that hands-four. That is, I'm discounting triple minors, magpie dances, squares, etc.
 // Beckett will be added as an option now but inoperative, and then I'll implement Beckett.
 
+/*
+
+Details of output:
+
+I will make a graphical output later, but for now the output is to console.
+
+Output is the class containing the methods to actually put things onto the screen (aka console). It is a singleton because we only want one output, and it has blit methods to take an image, delete the current display, and replace it with the supplied image.
+
+Frame is where the images are made. It represents a slice of Output, which gets passed to Output in a draw request.
+
+Each drawable entity (dancers, arms, etc) inherits from Drawable. Thus, any drawable entity has a .draw() method which can either take a Frame or not. If a frame is supplied, it draws to that frame. Each drawable object also gets its own Frame by default, which can be set. If .draw() isn't given a Frame,
+it defaults to drawing on the object's own Frame.
+
+We also have a MovingFrame class. This class receives a vector of MovingDrawable, which is a class containing both a Drawable and a heap called futures of the times and positions it needs to be drawn, sorted by next time first. MovingFrame runs an internal clock, and asks Output to draw frames at a specified interval. In between releases,
+it asks each MovingDrawable to pop from its futures until it gets to a time at or after the current time, with time 0 being the time the MovingFrame was made. If that MovingDrawable needs to be drawn now, it does so, and if the heap is empty, it removes this MovingDrawable from consideration.
+
+Output can garbage collect its own Frames if asked, so we needn't worry about that, but we can also pass by reference if we want to (but Output will lock the Frame while processing so we can't make the next frame). Thus, we pass a copy instead.
+
+*/
+
 class Output{ /* Here, we use the Singleton design pattern. */
 	private:
 		// EXPERIMENTAL VALUES FOR MY DISPLAY
 		int console_width = 40;
 		int console_height = 50;
-
-		char[][]
-
-	protected:
-		static Output theSingletonObject;
-
 		Output(int width, int height){
 			
 		}
-
+		static Output theSingletonObject;
 	public:
 		static Output initialize_or_return_singleton(){
 			initialize_or_return_singleton(this->console_width, this->console_height);
@@ -31,8 +45,34 @@ class Output{ /* Here, we use the Singleton design pattern. */
 
 			}
 		}
-		
+		static Output drawFrame(){
 
+		}
+}
+
+class Frame{
+	private:
+
+	public:
+		Frame(){
+
+		}
+}
+
+class MovingFrame{
+	private:
+		vector<int> DrawableQueue;
+	public:
+		
+}
+
+class MovingDrawable{
+	private:
+
+	public:
+		MovingDrawable(){
+
+		}
 }
 
 class Drawable{
@@ -59,6 +99,7 @@ class Drawable{
 
 		/*
 		Method Name: draw
+		Description: 
 		Parameters:
 		x = x-coordinate to place the image.
 		y = y-coordinate to place the image.
@@ -142,11 +183,13 @@ class Dancers{
 		Dancers(){
 		        //this->names = {"Holly", "Jolly", "Molly", "Polly", "Dolly", "Lolly"};
 		};
-		bool
+		/*
+		Method Name: add_to_set
+		*/
 		bool add_to_set(std::string[2] who){
 			if(this->maximum_couples != -1){
-				if(this->number_of_couples < this->maximum_couples){
-
+				if(this->number_of_couples >= this->maximum_couples){
+					return false;
 				}
 			}
 		};
