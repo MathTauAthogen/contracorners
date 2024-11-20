@@ -80,7 +80,7 @@ class Grid{
 			if(change && (grid_height != height || grid_width != width)){
 				grid_height = height;
 				grid_width = width;
-				grid = new vector(width, vector<T>(height, null_T));
+				grid = new vector(width, vector<T>(height, *null_T));
 			}
 			for(int i = 0; i < width; i++){
 				for(int j = 0; j < height; j++){
@@ -103,7 +103,7 @@ class Grid{
 				return (*grid)[index1][index2];
 			}
 			else{
-				return &(*(const_cast<T*>(null_T)));
+				return *(const_cast<T*>(null_T));
 			}
 		};
 
@@ -174,7 +174,9 @@ class Frame{
 		static const int default_frame_height = experimental_height;
 		int frame_width;
 		int frame_height;
-		static constexpr Pixel* nullpix = new Pixel(1);
+		//static constexpr Pixel* nullpix = new Pixel(1);
+		static constexpr Pixel nullpix_obj = Pixel(1);
+		static constexpr Pixel* nullpix = const_cast<Pixel*>(&(nullpix_obj)); /* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
 		Grid<Pixel> rows; // This is an array of, for each pixel, a struct with keys "value", "bg_color", "fg_color", and etc, among other properties, which are used in the Outputting.
 
 		/*unordered_map<std::string, char> make_default_pixel(int i = -1, int j = -1){// The superfluous ints are to work with the grid initialize_with method.
@@ -259,20 +261,7 @@ class Frame{
 				return true;
 			}
 		}
-
-		bool draw_on(Drawable& drawable){
-			for(int i = 0; i < frame_width; i++){
-				for(int j = 0; j < frame_height; j++){
-					Pixel pix = drawable.get_pixel(i, j);
-					if(pix.check_valid_pixel() && !pix.is_blank()){
-						change_pixel(pix, i, j);
-					}
-				}
-			}
-			//if(drawable.get_mode() == "FRAME"){
-
-			//}
-		}
+		bool draw_on(Drawable& drawable); // DEFINED AFTER DRAWABLE
 };
 
 class Drawable{
@@ -286,7 +275,8 @@ class Drawable{
 		float current_pos_y;
 		float rotation;
 		Frame internal_frame = Frame(false);
-		static constexpr Pixel* nullpix = new Pixel(1);
+		static constexpr Pixel nullpix_obj = Pixel(1);
+		static constexpr Pixel* nullpix = const_cast<Pixel*>(&(nullpix_obj)); /* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
 		std::string mode = "FRAME"; // Can be "FRAME", "EQUATION", or "DOT_NEAREST". This is how the Drawable is drawn. For a FRAME mode, the internal_frame is just blitted onto 
 	public:
 		Drawable(Grid<Pixel> image, float rotate = 0.0, float scale_factor = 1.0, float current_pos_x = 0, float current_pos_y = 0){
@@ -351,7 +341,7 @@ class Drawable{
 		// In reality, this method just moves/changes the image that will be drawn via a Frame().draw_on().
 		bool draw(Frame& frame, int x, int y, int scale, float rotation){
 
-			
+			return false; // TODO: FINISH
 		}
 
 		/*
@@ -363,13 +353,36 @@ class Drawable{
 		flip = whether the image is flipped.
 		*/
 		bool load_points(vector<int[2]> points, float delay, int scale_factor, bool flip){
-
+			return false; // TODO: FINISH
 		}
 
 		bool compute_splines(vector<int[2]> points, vector<int[2]> momenta, vector<int[2]> accels){
-
+			return false; // TODO: FINISH
 		}
 };
+
+
+///////////////////////////////////// DRAW_ON DEFINITION /////////////////////////////////////////////////////////////////////////////
+
+
+inline bool Frame::draw_on(Drawable& drawable){
+	bool changed_anything = false;
+	for(int i = 0; i < frame_width; i++){
+		for(int j = 0; j < frame_height; j++){
+			Pixel pix = drawable.get_pixel(i, j);
+			if(pix.check_valid_pixel() && !pix.is_blank()){
+				changed_anything = true;
+				change_pixel(pix, i, j);
+			}
+		}
+	}
+	//if(drawable.get_mode() == "FRAME"){
+
+	//}
+	return changed_anything;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class Output{ /* Here, we use the Singleton design pattern. */
 	private:
@@ -527,10 +540,13 @@ class Dancers{
 			CoupleNames newWhoNames = CoupleNames(who);
 			names.push_back(newWhoNames);
 			stop_if_running();
+			/////////////////////////////////////////////////////
+			return false; // TODO: FINISH
+			/////////////////////////////////////////////////////
 		};
 
 		bool stop_if_running(){
-
+			return false; // TODO: FINISH
 		}
 
 		vector<CoupleNames> get_names(){
@@ -570,13 +586,13 @@ class PlayfordDance : public Dance{
 int main ()
 {
 
-	std::string filename = "params.txt";
-	std::fstream s = fstream(filename);
+	//std::string filename = "params.txt";
+	//std::fstream s = fstream(filename);
 
-	if (!s.is_open()){
-		std::cout << "Failed to open!\n";
-		return 0;
-	};
+	//if (!s.is_open()){
+	//	std::cout << "Failed to open!\n";
+	//	return 0;
+	//};
 
 	//std::map<std::string, std::string> dance_moves = {
 	//	{"",""},
@@ -595,9 +611,11 @@ int main ()
 		dancers.add_to_set(i);
 	}
 	for (int i = 0; i < dancers.get_names().size(); i ++){
-		for(auto j : dancers.get_names()[i].names){
-			std::cout << j << " ";
+		//for(auto j : dancers.get_names()[i].names){ ///////////////////////////////////////////////////////////////// TODO: FIGURE OUT WHY THIS BLOWS ITSELF UP
+		for(int j = 0; j < dancers.get_names()[i].names.size(); j++){
+			std::cout << dancers.get_names()[i].names[j] << " ";
 		}
 		std::cout  << "\n";
+
 	}
 };
