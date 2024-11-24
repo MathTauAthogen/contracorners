@@ -69,7 +69,8 @@ int main ()
 		}
 	}
 
-	Drawable drawing = Drawable(image);
+	Drawable drawing = Drawable(image, true);
+	Drawable drawing2 = Drawable(image, true);
 	cout << drawing.get_frame().draw_on(drawing);
 	Output::drawFrameEdit(drawing.get_frame(), false);
 
@@ -81,8 +82,12 @@ int main ()
 		drawing.get_frame().clear();
 		//drawing.draw(50 * cos(count / 10.0 * 2 * pi), 50 * sin(count / 10.0 * 2 * pi), 4.5, 0.1 * count);
 		//drawing.draw(25 + 12 * cos(count / 10.0 * 2 * pi),25 + 12 * sin(count / 10.0 * 2 * pi), 1, 0.1 * count);//, 4.5, 0.1 * count);
-		drawing.draw(25 + 12 * cos(count / 100.0 * 2 * pi),25 + 12 * sin(count / 100.0 * 2 * pi), 1, 0.01 * count);//, 4.5, 0.1 * count);
+		//drawing.draw(50 + 50 * cos(count / 100.0 * 2 * pi),150 + 50 * sin(count / 100.0 * 2 * pi), 8, 0.01 * count);//, 4.5, 0.1 * count);
+		drawing.draw(50, 150, 8, 0.01 * count);//, 4.5, 0.1 * count);
+		drawing2.draw(50, 150, 1, 0.01 * count);//, 4.5, 0.1 * count);
 		drawing.get_frame().draw_on(drawing);
+		drawing.get_frame().draw_on(drawing2);
+		drawing.get_frame().change_pixel(Pixel((char)'%'), 50, 150);
 		while((std::chrono::system_clock::now() - start) < count * 10ms){
 			std::this_thread::sleep_for(100ms);
 		}

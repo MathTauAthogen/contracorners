@@ -125,10 +125,10 @@ class Grid{
 struct Pixel{	
 	char value = ' ';
 	std::string bg_color = "clear_bg";
-	std::string fg_color = "black";
+	std::string fg_color = "white";
 	static const char default_value = ' ';
 	static constexpr std::string default_bg_color = "clear_bg";
-	static constexpr std::string default_fg_color = "black";
+	static constexpr std::string default_fg_color = "white";
 	bool blank = true;
 	bool null = false;
 	constexpr Pixel(int bool_blank_null){
@@ -306,12 +306,13 @@ class Drawable{
 		float current_pos_x;
 		float current_pos_y;
 		float rotation;
+		bool from_center;
 		Frame internal_frame = Frame(false);
 		static constexpr Pixel nullpix_obj = Pixel(-1);
 		static constexpr Pixel* nullpix = const_cast<Pixel*>(&(nullpix_obj)); /* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
 		std::string mode = "FRAME"; // Can be "FRAME", "EQUATION", or "DOT_NEAREST". This is how the Drawable is drawn. For a FRAME mode, the internal_frame is just blitted onto 
 	public:
-		Drawable(Grid<Pixel> image, float rotate = 0.0, float scale_factor = 1.0, float current_pos_x = 0, float current_pos_y = 0){
+		Drawable(Grid<Pixel> image, bool from_center = false, float rotate = 0.0, float scale_factor = 1.0, float current_pos_x = 0, float current_pos_y = 0){
 			rows = image.height();
 			cols = image.width();
 			this->image = image;
@@ -319,6 +320,7 @@ class Drawable{
 			this->current_pos_x = current_pos_x;
 			this->current_pos_y = current_pos_y;
 			this->rotation = rotate;
+			this->from_center = from_center;
 		}
 
 		std::string get_mode(){
@@ -353,7 +355,12 @@ class Drawable{
 					tempy = (tempy - cols) / scale_factor;
 				}
 
-				// Now, rotate. We rotate about the centre of the image, (rows/2, cols/2). WE have to rotate backwards to make it so that when we access the rotated image of (i, j), we really access (i. j) as we would like.
+				if(from_center){
+					tempx += rows/2.0;
+					tempy += cols/2.0;
+				}
+
+				// Now, rotate. We rotate about the centre of the image, (rows/2, cols/2). We have to rotate backwards to make it so that when we access the rotated image of (i, j), we really access (i. j) as we would like.
 
 				//Here, we define rotation = 1 as a full 360 degree rotation.
 
@@ -374,6 +381,13 @@ class Drawable{
 				tempy += offset_y;
 
 				float newdist = sqrt(pow(tempx - offset_x, 2) + pow(tempy - offset_y, 2));
+
+				//cout << "Dist diff: " << newdist - olddist << endl;
+
+				//if(from_center){
+				//	tempx += rows/2.0;
+				//	tempy += cols/2.0;
+				//}
 
 				/*if(0 <= tempx && tempx < image.height() && 0 <= tempy && tempy < image.width()){
 					cout << "ORIGINAL = " << i << " AND " << j << endl;
