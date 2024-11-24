@@ -1,3 +1,6 @@
+#ifndef CONSOLE_OUTPUT_H
+#define CONSOLE_OUTPUT_H
+
 #include <string>
 #include <map>
 #include <vector>
@@ -297,7 +300,8 @@ class Frame{
 };
 
 class Drawable{
-	private:
+	//private:
+	protected:
 		static constexpr double pi = std::numbers::pi;
 		Grid<Pixel> image;
 		int rows;
@@ -308,6 +312,7 @@ class Drawable{
 		float rotation;
 		bool from_center;
 		Frame internal_frame = Frame(false);
+	//protected:
 		static constexpr Pixel nullpix_obj = Pixel(-1);
 		static constexpr Pixel* nullpix = const_cast<Pixel*>(&(nullpix_obj)); /* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
 		std::string mode = "FRAME"; // Can be "FRAME", "EQUATION", or "DOT_NEAREST". This is how the Drawable is drawn. For a FRAME mode, the internal_frame is just blitted onto 
@@ -331,69 +336,80 @@ class Drawable{
 			return internal_frame;
 		}
 
-		Pixel get_pixel(int i, int j){
+		pair<float, float> transform(int i, int j){
+			float tempx = i;
+			float tempy = j;
+
+			if(scale_factor == 0){
+				return make_pair(-1, -1); // The default error value
+			}
+
+			// Now, shift into place.
+			tempx = tempx - current_pos_x;
+			tempy = tempy - current_pos_y;
+
+			// Rescale.
+
+			if(scale_factor > 0){
+				tempx = tempx / scale_factor;
+				tempy = tempy / scale_factor;
+			}
+			else if(scale_factor < 0){
+				tempx = (tempx - rows) / scale_factor;
+				tempy = (tempy - cols) / scale_factor;
+			}
+
+			if(from_center){
+				tempx += rows/2.0;
+				tempy += cols/2.0;
+			}
+
+			// Now, rotate. We rotate about the centre of the image, (rows/2, cols/2). We have to rotate backwards to make it so that when we access the rotated image of (i, j), we really access (i. j) as we would like.
+
+			//Here, we define rotation = 1 as a full 360 degree rotation.
+
+			float offset_x = rows/2.0;
+			float offset_y = cols/2.0;
+
+			float oldtempx = tempx;
+			float oldtempy = tempy;
+
+			float olddist = sqrt(pow(tempx - offset_x, 2) + pow(tempy - offset_y, 2));
+
+			//cout << "oldtempx = " << oldtempx << endl;
+			tempx = (-sin(-2 * pi * rotation) * (oldtempy - offset_y)) + ((oldtempx - offset_x) * cos(-2 * pi * rotation));
+			tempy = (sin(-2 * pi * rotation) * (oldtempx - offset_x)) + ((oldtempy - offset_y) * cos(-2 * pi * rotation));
+			//cout << "tempx = " << tempx << endl;
+
+			tempx += offset_x;
+			tempy += offset_y;
+
+			float newdist = sqrt(pow(tempx - offset_x, 2) + pow(tempy - offset_y, 2));
+
+			//cout << "Dist diff: " << newdist - olddist << endl;
+
+			//if(from_center){
+			//	tempx += rows/2.0;
+			//	tempy += cols/2.0;
+			//}
+
+			/*if(0 <= tempx && tempx < image.height() && 0 <= tempy && tempy < image.width()){
+				cout << "ORIGINAL = " << i << " AND " << j << endl;
+				cout << "tempx = " << round(tempx) << "tempy = " << round(tempy) << endl;
+				cout << "output += " << image[round(tempx), round(tempy)].visualize() << endl;
+			}*/
+
+			return make_pair(tempx, tempy);
+		}
+
+		virtual Pixel get_pixel(int i, int j){
+			auto [tempx, tempy] = transform(i, j);
+
+			if(tempx == -1 && tempy == -1){
+				return *nullpix;
+			}
+			
 			if(mode == "FRAME"){
-				float tempx = i;
-				float tempy = j;
-
-				if(scale_factor == 0){
-					return *nullpix;
-				}
-
-				// Now, shift into place.
-				tempx = tempx - current_pos_x;
-				tempy = tempy - current_pos_y;
-
-				// Rescale.
-
-				if(scale_factor > 0){
-					tempx = tempx / scale_factor;
-					tempy = tempy / scale_factor;
-				}
-				else if(scale_factor < 0){
-					tempx = (tempx - rows) / scale_factor;
-					tempy = (tempy - cols) / scale_factor;
-				}
-
-				if(from_center){
-					tempx += rows/2.0;
-					tempy += cols/2.0;
-				}
-
-				// Now, rotate. We rotate about the centre of the image, (rows/2, cols/2). We have to rotate backwards to make it so that when we access the rotated image of (i, j), we really access (i. j) as we would like.
-
-				//Here, we define rotation = 1 as a full 360 degree rotation.
-
-				float offset_x = rows/2.0;
-				float offset_y = cols/2.0;
-
-				float oldtempx = tempx;
-				float oldtempy = tempy;
-
-				float olddist = sqrt(pow(tempx - offset_x, 2) + pow(tempy - offset_y, 2));
-
-				//cout << "oldtempx = " << oldtempx << endl;
-				tempx = (-sin(-2 * pi * rotation) * (oldtempy - offset_y)) + ((oldtempx - offset_x) * cos(-2 * pi * rotation));
-				tempy = (sin(-2 * pi * rotation) * (oldtempx - offset_x)) + ((oldtempy - offset_y) * cos(-2 * pi * rotation));
-				//cout << "tempx = " << tempx << endl;
-
-				tempx += offset_x;
-				tempy += offset_y;
-
-				float newdist = sqrt(pow(tempx - offset_x, 2) + pow(tempy - offset_y, 2));
-
-				//cout << "Dist diff: " << newdist - olddist << endl;
-
-				//if(from_center){
-				//	tempx += rows/2.0;
-				//	tempy += cols/2.0;
-				//}
-
-				/*if(0 <= tempx && tempx < image.height() && 0 <= tempy && tempy < image.width()){
-					cout << "ORIGINAL = " << i << " AND " << j << endl;
-					cout << "tempx = " << round(tempx) << "tempy = " << round(tempy) << endl;
-					cout << "output += " << image[round(tempx), round(tempy)].visualize() << endl;
-				}*/
 				return image[round(tempx), round(tempy)];
 			}
 			else if (mode == "DOT_NEAREST"){
@@ -575,3 +591,7 @@ class Output{ /* Here, we use the Singleton design pattern. */
 };
 
 Output* Output::theSingletonObject = nullptr; // I guess I have to do this outside of the class
+
+
+
+#endif
