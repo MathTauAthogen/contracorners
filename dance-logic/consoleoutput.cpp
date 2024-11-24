@@ -1,5 +1,3 @@
-#include <iostream>
-#include <fstream>
 #include <string>
 #include <map>
 #include <vector>
@@ -10,9 +8,6 @@
 #include<functional>
 
 using namespace std;
-
-// For now, I'll only be modelling dances in a hands-four, which doesn't leave that hands-four. That is, I'm discounting triple minors, magpie dances, squares, etc.
-// Beckett will be added as an option now but inoperative, and then I'll implement Beckett.
 
 /*
 
@@ -35,11 +30,15 @@ Output can garbage collect its own Frames if asked, so we needn't worry about th
 */
 
 // EXPERIMENTAL VALUES FOR MY DISPLAY
-const int experimental_width = 40;
-const int experimental_height = 50;
+const int experimental_width = 400;
+const int experimental_height = 100;
 unordered_map<std::string, std::string> color_codes = {
-	{"white", ""},{"black", ""},{"blue", ""},{"green", ""}
-};
+	{"white", "15"},{"black", "0"},{"blue", "21"},{"navy", "12"},{"green", "2"},{"green_neon", "10"}, {"clear_fg", "2m\033[39"}, {"clear_bg", "2m\033[49"}
+}; // These are 256 bit codes.
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 template <typename T>
 class Grid{
@@ -49,7 +48,15 @@ class Grid{
 		int grid_width;
 		static constexpr int default_grid_width = 10; // These are arbitrary, shouldn't ever really be used.
 		static constexpr int default_grid_height = 10; // These are arbitrary, shouldn't ever really be used.
-		static constexpr T* default_null_T = new T();
+		
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//static constexpr T* default_null_T = new T(-1); // There's an assumption that T will have -1 as a parameter map to a null.
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		static constexpr T default_null_T_obj = T(-1);
+		static constexpr T* default_null_T = const_cast<T*>(&(default_null_T_obj)); /* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 		const T* null_T;
 	public:
 		Grid(){};
@@ -57,7 +64,7 @@ class Grid{
 			grid_height = height;
 			grid_width = width;
 			this->null_T = null_T;
-			grid = new vector(grid_width, vector<T>(grid_height, *null_T));
+			grid = new vector(grid_height, vector<T>(grid_width, *null_T));
 		};
 
 		int width(){
@@ -73,17 +80,17 @@ class Grid{
 				grid_height = height;
 				grid_width = width;
 			}
-			grid = new vector(grid_width, vector<T>(grid_height, *null_T));
+			grid = new vector(grid_height, vector<T>(grid_width, *null_T));
 		};
 
 		bool initialize_with(std::function<T(int, int)> func, bool change = false, int width = default_grid_width, int height = default_grid_height){
 			if(change && (grid_height != height || grid_width != width)){
 				grid_height = height;
 				grid_width = width;
-				grid = new vector(width, vector<T>(height, *null_T));
+				grid = new vector(height, vector<T>(width, *null_T));
 			}
-			for(int i = 0; i < width; i++){
-				for(int j = 0; j < height; j++){
+			for(int i = 0; i < height; i++){
+				for(int j = 0; j < width; j++){
 					(*grid)[i][j] = func(i, j);
 				}
 			}
@@ -99,10 +106,11 @@ class Grid{
 		}
 
 		T& operator[](size_t index1, size_t index2){
-			if(0 <= index1 && index1 < grid_width && 0 <= index2 && index2 < grid_height){ // I made this operator to make sure the grid is kept square. I don't want to ever allow a push_back or erase, I'd only like them to be able to get or set 
+			if(0 <= index1 && index1 < grid_height && 0 <= index2 && index2 < grid_width){ // I made this operator to make sure the grid is kept square. I don't want to ever allow a push_back or erase, I'd only like them to be able to get or set 
 				return (*grid)[index1][index2];
 			}
 			else{
+				//cout << "OUT OF RANGE: i = " << index1 << " and j = " << index2 << " AND GRID HEIGHT = " << grid_height << " AND GRID WIDTH = " << grid_width << endl;
 				return *(const_cast<T*>(null_T));
 			}
 		};
@@ -114,12 +122,12 @@ class Grid{
 		//};
 };
 
-struct Pixel{
+struct Pixel{	
 	char value = ' ';
-	std::string bg_color = "white";
+	std::string bg_color = "clear_bg";
 	std::string fg_color = "black";
 	static const char default_value = ' ';
-	static constexpr std::string default_bg_color = "white";
+	static constexpr std::string default_bg_color = "clear_bg";
 	static constexpr std::string default_fg_color = "black";
 	bool blank = true;
 	bool null = false;
@@ -135,6 +143,9 @@ struct Pixel{
 	};
 
 	Pixel(char new_value = default_value, std::string new_bg_color = default_bg_color, std::string new_fg_color = default_fg_color){
+		blank = blank && (value == new_value);
+		blank = blank && (fg_color == new_fg_color);
+		blank = blank && (bg_color == new_bg_color);
 		value = new_value;
 		bg_color = new_bg_color;
 		fg_color = new_fg_color;
@@ -147,7 +158,7 @@ struct Pixel{
 		return true;
 	}
 	std::string visualize(){
-		return to_string(value);
+		return "\033[38;5;" + color_codes[fg_color] + ";48;5;" + color_codes[bg_color] + "m" + std::string(1, value) + "\033[0m";
 	}
 	bool is_blank(){
 		return blank || null;
@@ -158,6 +169,16 @@ struct Pixel{
 	bool define_blank(){
 		return (!blank) && (blank = true);
 	}
+	bool assign(char new_value = default_value, std::string new_bg_color = default_bg_color, std::string new_fg_color = default_fg_color){
+		blank = blank && (value == new_value);
+		blank = blank && (fg_color == new_fg_color);
+		blank = blank && (bg_color == new_bg_color);
+		value = new_value;
+		bg_color = new_bg_color;
+		fg_color = new_fg_color;
+		return blank;
+	}
+
 	bool erase(){
 		value = default_value;
 		bg_color = default_bg_color;
@@ -165,6 +186,10 @@ struct Pixel{
 		return (!blank) && (blank = true);
 	}
 };
+
+bool operator!=(const Pixel& pix1, const Pixel&pix2){
+	return (pix1.value != pix2.value) || (pix1.bg_color != pix2.bg_color) || (pix1.fg_color != pix2.fg_color) || (pix1.blank != pix2.blank) || (pix1.null != pix2.null);
+}
 
 class Drawable;
 
@@ -174,8 +199,8 @@ class Frame{
 		static const int default_frame_height = experimental_height;
 		int frame_width;
 		int frame_height;
-		//static constexpr Pixel* nullpix = new Pixel(1);
-		static constexpr Pixel nullpix_obj = Pixel(1);
+		//static constexpr Pixel* nullpix = new Pixel(-1);
+		static constexpr Pixel nullpix_obj = Pixel(-1);
 		static constexpr Pixel* nullpix = const_cast<Pixel*>(&(nullpix_obj)); /* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
 		Grid<Pixel> rows; // This is an array of, for each pixel, a struct with keys "value", "bg_color", "fg_color", and etc, among other properties, which are used in the Outputting.
 
@@ -202,6 +227,13 @@ class Frame{
 			}
 		}
 
+		void clear(bool use_blank = true){
+			rows = Grid<Pixel>(frame_width, frame_height, nullpix);
+			if(use_blank){
+				rows.initialize_with(make_default_pixel);
+			}
+		}
+
 		int get_width(){
 			return this->frame_width;
 		}
@@ -219,12 +251,12 @@ class Frame{
 		}
 
 		bool change_pixel(Pixel pixel, int ind_x, int ind_y){ /* This might do better as private but I'll make it so when I know it is easy to draw in other ways. This is mostly an internal method. */
-			if(!pixel.check_valid_pixel()){
+			if(!pixel.check_valid_pixel() || pixel.is_blank()){
 				return false;
 			}
-			if(!rows[ind_x, ind_y].is_blank()){
-				rows[ind_x, ind_y] = pixel;
-			}
+			//if(!pixel.is_blank()){
+			rows[ind_x, ind_y] = pixel;
+			//}
 			return true;
 		}
 
@@ -234,8 +266,8 @@ class Frame{
 			}
 			else{
 				Grid<Pixel> frame2_rows = frame2.get_rows();
-				for(int i = 0; i < frame1.get_width(); i ++){
-					for(int j = 0; j < frame1.get_height(); j++){
+				for(int i = 0; i < frame1.get_height(); i ++){
+					for(int j = 0; j < frame1.get_width(); j++){
 						if(!frame2_rows[i, j].is_blank()){
 							frame1.change_pixel(frame2_rows[i, j], i, j);
 						}
@@ -251,8 +283,8 @@ class Frame{
 			}
 			else{
 				Grid<Pixel> frame_rows = frame.get_rows();
-				for(int i = 0; i < frame_width; i ++){
-					for(int j = 0; j < frame_height; j++){
+				for(int i = 0; i < frame_height; i ++){
+					for(int j = 0; j < frame_width; j++){
 						if(!frame_rows[i, j].is_blank()){
 							change_pixel(frame_rows[i, j], i, j);
 						}
@@ -275,13 +307,13 @@ class Drawable{
 		float current_pos_y;
 		float rotation;
 		Frame internal_frame = Frame(false);
-		static constexpr Pixel nullpix_obj = Pixel(1);
+		static constexpr Pixel nullpix_obj = Pixel(-1);
 		static constexpr Pixel* nullpix = const_cast<Pixel*>(&(nullpix_obj)); /* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
 		std::string mode = "FRAME"; // Can be "FRAME", "EQUATION", or "DOT_NEAREST". This is how the Drawable is drawn. For a FRAME mode, the internal_frame is just blitted onto 
 	public:
 		Drawable(Grid<Pixel> image, float rotate = 0.0, float scale_factor = 1.0, float current_pos_x = 0, float current_pos_y = 0){
-			rows = image.width();
-			cols = image.height();
+			rows = image.height();
+			cols = image.width();
 			this->image = image;
 			this->scale_factor = scale_factor;
 			this->current_pos_x = current_pos_x;
@@ -293,37 +325,68 @@ class Drawable{
 			return mode;
 		}
 
+		Frame& get_frame(){
+			return internal_frame;
+		}
+
 		Pixel get_pixel(int i, int j){
 			if(mode == "FRAME"){
-				int tempx;
-				int tempy;
+				float tempx = i;
+				float tempy = j;
+
+				if(scale_factor == 0){
+					return *nullpix;
+				}
+
+				// Now, shift into place.
+				tempx = tempx - current_pos_x;
+				tempy = tempy - current_pos_y;
+
+				// Rescale.
+
 				if(scale_factor > 0){
-					tempx = round(i / scale_factor);
-					tempy = round(j / scale_factor);
+					tempx = tempx / scale_factor;
+					tempy = tempy / scale_factor;
 				}
 				else if(scale_factor < 0){
-					tempx = round((i - rows) / scale_factor);
-					tempy = round((j - cols) / scale_factor);
-				}
-				else{
-					return *nullpix;
+					tempx = (tempx - rows) / scale_factor;
+					tempy = (tempy - cols) / scale_factor;
 				}
 
 				// Now, rotate. We rotate about the centre of the image, (rows/2, cols/2). WE have to rotate backwards to make it so that when we access the rotated image of (i, j), we really access (i. j) as we would like.
 
 				//Here, we define rotation = 1 as a full 360 degree rotation.
 
-				tempx = -sin(-2 * pi * rotation) * tempy + tempx * cos(-2 * pi * rotation);
-				tempy = sin(-2 * pi * rotation) * tempx + tempy * cos(-2 * pi * rotation);
-				
-				// Now, shift into place.
-				tempx = tempx - current_pos_x;
-				tempy = tempy - current_pos_y;
+				float offset_x = rows/2.0;
+				float offset_y = cols/2.0;
 
-				return image[tempx, tempy];
+				float oldtempx = tempx;
+				float oldtempy = tempy;
+
+				float olddist = sqrt(pow(tempx - offset_x, 2) + pow(tempy - offset_y, 2));
+
+				//cout << "oldtempx = " << oldtempx << endl;
+				tempx = (-sin(-2 * pi * rotation) * (oldtempy - offset_y)) + ((oldtempx - offset_x) * cos(-2 * pi * rotation));
+				tempy = (sin(-2 * pi * rotation) * (oldtempx - offset_x)) + ((oldtempy - offset_y) * cos(-2 * pi * rotation));
+				//cout << "tempx = " << tempx << endl;
+
+				tempx += offset_x;
+				tempy += offset_y;
+
+				float newdist = sqrt(pow(tempx - offset_x, 2) + pow(tempy - offset_y, 2));
+
+				/*if(0 <= tempx && tempx < image.height() && 0 <= tempy && tempy < image.width()){
+					cout << "ORIGINAL = " << i << " AND " << j << endl;
+					cout << "tempx = " << round(tempx) << "tempy = " << round(tempy) << endl;
+					cout << "output += " << image[round(tempx), round(tempy)].visualize() << endl;
+				}*/
+				return image[round(tempx), round(tempy)];
 			}
 			else if (mode == "DOT_NEAREST"){
 				return internal_frame.get_pixel(i, j); // Placeholder
+			}
+			else{
+				return Pixel(-1); // Shouldn't happen for now, TODO: REPLACE
 			}
 		}
 
@@ -339,9 +402,14 @@ class Drawable{
 		*/
 
 		// In reality, this method just moves/changes the image that will be drawn via a Frame().draw_on().
-		bool draw(Frame& frame, int x, int y, int scale, float rotation){
-
-			return false; // TODO: FINISH
+		//bool draw(Frame& frame, int x, int y, int scale, float rotation){
+		bool draw(float x = 0, float y = 0, float scale = 1, float rotation = 0){
+			this->current_pos_x = x;
+			this->current_pos_y = y;
+			this->scale_factor = scale;
+			this->rotation = rotation;
+			return true;
+			//return false; // TODO: FINISH
 		}
 
 		/*
@@ -367,13 +435,10 @@ class Drawable{
 
 inline bool Frame::draw_on(Drawable& drawable){
 	bool changed_anything = false;
-	for(int i = 0; i < frame_width; i++){
-		for(int j = 0; j < frame_height; j++){
+	for(int i = 0; i < frame_height; i++){
+		for(int j = 0; j < frame_width; j++){
 			Pixel pix = drawable.get_pixel(i, j);
-			if(pix.check_valid_pixel() && !pix.is_blank()){
-				changed_anything = true;
-				change_pixel(pix, i, j);
-			}
+			changed_anything = change_pixel(pix, i, j) || changed_anything;
 		}
 	}
 	//if(drawable.get_mode() == "FRAME"){
@@ -391,12 +456,19 @@ class Output{ /* Here, we use the Singleton design pattern. */
 		static const int default_console_height = experimental_height;
 		int console_width;
 		int console_height;
+		Grid<Pixel> last_image;
 		Output(int width, int height){
 			this->console_width = width;
 			this->console_height = height;
-		}
+			this->last_image = Grid<Pixel>(width, height);
+			cout << "\033[?25l";
+		};
+		~Output(){};
 		static Output* theSingletonObject;
 	public:
+		Output(const Output&) = delete;
+		Output* operator=(const Output&) = delete;
+
 		static Output* initialize_or_return_singleton(int width = default_console_width, int height = default_console_height){
 			if(theSingletonObject == nullptr){
 				theSingletonObject = new Output(width, height);
@@ -404,218 +476,88 @@ class Output{ /* Here, we use the Singleton design pattern. */
 			return theSingletonObject;
 
 		}
-		static bool drawFrame(Frame* frame){
+		static void clear(){
+			/*for(int i = 0; i < theSingletonObject->console_height; i++){
+				cout << endl;
+			}*/
+			std::cout << "\x1B[2J\x1B[H";
+		}
+
+		Grid<Pixel> get_last_image(){
+			return last_image;
+		}
+
+		int get_width(){
+			return console_width;
+		}
+
+		int get_height(){
+			return console_height;
+		}
+		/*static bool drawFrame(Frame* frame){
 			if(frame == nullptr){
 				return false;
 			}
 			else{
+				clear();
+				cout << std::string(2 + frame.get_width(), '-') << endl;
+				int rownum, colnum = 0;
 				for(auto i : frame->get_rows()){
+					cout << "|";
+					colnum = 0;
 					for(auto j : i){
+						last_image[rownum, colnum] = j;
+						colnum += 1;
 						cout << j.visualize();
 					}
+					cout << "|";
 					cout << endl;
+					rownum += 1;
 				}
+				cout << std::string(2 + frame.get_width(), '-') << endl;
 				return true;
 			}
-		}
+		}*/
 		static bool drawFrame(Frame frame){
+			clear();
+			cout << std::string(2 + frame.get_width(), '-') << endl;
+			int rownum = 0, colnum = 0;
+			Grid<Pixel> last_image = initialize_or_return_singleton()->get_last_image();
 			for(auto i : frame.get_rows()){
-					for(auto j : i){
+				cout << "|";
+				colnum = 0;
+				for(auto j : i){
+					last_image[rownum, colnum] = j;
+					colnum += 1;
+					cout << j.visualize();
+				}
+				cout << "|";
+				cout << endl;
+				rownum += 1;
+			}
+			cout << std::string(2 + frame.get_width(), '-') << endl;
+			return true;
+		}
+		static bool drawFrameEdit(Frame frame, bool prevdrawn = false){
+			if(!prevdrawn){
+				return drawFrame(frame);
+			}
+			int rownum = 0, colnum = 0;
+			Grid<Pixel> last_image = initialize_or_return_singleton()->get_last_image();
+			for(auto i : frame.get_rows()){
+				colnum = 0;
+				for(auto j : i){
+					if(last_image[rownum, colnum] != j){
+						cout << "\033[" << (rownum + 2) << ";" << (colnum + 2) << "H";
 						cout << j.visualize();
 					}
-					cout << endl;
+					last_image[rownum, colnum] = j;
+					colnum += 1;
 				}
+				rownum += 1;
+			}
 			return true;
 		}
 };
 
-class MovingDrawable{
-	private:
-
-	public:
-		MovingDrawable(){
-
-		}
-};
-
-class MovingFrame{
-	private:
-		queue<MovingDrawable*> MovingDrawableQueue;
-		
-	public:
-		MovingFrame(vector<MovingDrawable*> drawables){
-
-		}
-		MovingFrame(queue<MovingDrawable*> drawables){
-
-		}
-		MovingFrame(){
-			// In this case, we use an empty queue. We wait for the start signal.
-		}
-		void start(){
-
-		}
-};
-
-/* This should be a visitor to the Dance class, which  */
-//class
-
-class Dancer{ //Not to be confused with Dancers, this models each individual dancer, whereas Dancers models the whole system of Dancers
-	private:
-		float momentum = 0;
-		std::string name;
-		//direction = ;
-	public:
-		Dancer(){
-			this->name = "Joey";
-		}
-		Dancer(std::string name){
-			this->name = name;
-		}
-		std::string get_name(){
-			return this->name;
-		}
-};
-
-class Couple{ // More complicated couples to come, for now I just have a single constructor for a two person couple.
-	private:
-		bool hasTwoPeople = true;
-		Dancer lark;
-		Dancer robin;
-		vector<Dancer> dancers;
-	public:
-		Couple(Dancer dancer1, Dancer dancer2){
-			lark = dancer1;
-			robin = dancer2;
-			dancers = {dancer1, dancer2};
-		};
-		bool swap_positions(){
-			if(hasTwoPeople){
-				lark, robin = robin, lark;
-				return true;
-			}
-			return false;
-		};
-};
-
-struct CoupleNames{
-	vector<std::string> names;
-	CoupleNames(vector<std::string> new_names){
-		//for(int i = 0; i < 2; i++){
-		//	names[i] = new_names[i];
-		//}
-		names = new_names;
-	};
-};
-
-// Here, each inner vector is a pair of Dancer classes, but I have it as a vector as I can't have a vector of arrays.
-class Dancers{
-	private:
-		//std::map<std::string, int> positions = {
-		//};
-
-		bool is_running = false;
-		std::vector<Couple> dancer_objs;
-		std::vector<CoupleNames> names;
-		int number_of_couples = 0;
-		static const int maximum_couples = -1; // We don't expect for a given set the maximum number of couples to change.
-	public:
-		Dancers(){
-		        //this->names = {"Holly", "Jolly", "Molly", "Polly", "Dolly", "Lolly"};
-		};
-		/*
-		Method Name: add_to_set
-		*/
-		bool add_to_set(vector<std::string> who){
-			if(who.size() != 2){
-				return false;
-			}
-			if(this->maximum_couples != -1){
-				if(this->number_of_couples >= this->maximum_couples){
-					return false;
-				}
-			}
-			Couple newWho = Couple(Dancer(who[0]), Dancer(who[1]));
-			dancer_objs.push_back(newWho);
-			CoupleNames newWhoNames = CoupleNames(who);
-			names.push_back(newWhoNames);
-			stop_if_running();
-			/////////////////////////////////////////////////////
-			return false; // TODO: FINISH
-			/////////////////////////////////////////////////////
-		};
-
-		bool stop_if_running(){
-			return false; // TODO: FINISH
-		}
-
-		vector<CoupleNames> get_names(){
-			return names;
-		};
-
-		Couple get_dancers(int couple_number){
-			return dancer_objs[couple_number];
-		};
-};
-
-class Dance{
-	private:
-		Dancers theDancers;
-	public:
-	Dance(){
-		theDancers = Dancers();
-	}
-
-};
-
-class HandsFour{
-	public:
-
-
-
-
-};
-
-class PlayfordDance : public Dance{
-	private:
-
-	public:
-		 
-};
-
-int main ()
-{
-
-	//std::string filename = "params.txt";
-	//std::fstream s = fstream(filename);
-
-	//if (!s.is_open()){
-	//	std::cout << "Failed to open!\n";
-	//	return 0;
-	//};
-
-	//std::map<std::string, std::string> dance_moves = {
-	//	{"",""},
-	//	{"",""},
-	//	{"",""}
-	//};
-
-	vector<vector<std::string>> dancer_names = {
-		{"Holly", "Jolly"},
-		{"Molly", "Polly"},
-		{"Dolly", "Lolly"},
-	};
-
-	Dancers dancers = Dancers();
-	for(auto i : dancer_names){
-		dancers.add_to_set(i);
-	}
-	for (int i = 0; i < dancers.get_names().size(); i ++){
-		//for(auto j : dancers.get_names()[i].names){ ///////////////////////////////////////////////////////////////// TODO: FIGURE OUT WHY THIS BLOWS ITSELF UP
-		for(int j = 0; j < dancers.get_names()[i].names.size(); j++){
-			std::cout << dancers.get_names()[i].names[j] << " ";
-		}
-		std::cout  << "\n";
-
-	}
-};
+Output* Output::theSingletonObject = nullptr; // I guess I have to do this outside of the class
