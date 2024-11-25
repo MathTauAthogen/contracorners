@@ -46,7 +46,7 @@ unordered_map<std::string, std::string> color_codes = {
 template <typename T>
 class Grid{
 	private:
-		vector<vector<T>>* grid = nullptr;
+		vector<vector<T*>>* grid = nullptr;
 		int grid_height;
 		int grid_width;
 		static constexpr int default_grid_width = 10; // These are arbitrary, shouldn't ever really be used.
@@ -60,14 +60,17 @@ class Grid{
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-		const T* null_T;
+		const T* _null_T;
 	public:
-		Grid(){};
+		Grid(){
+			grid_height = 0;
+			grid_width = 0;
+		};
 		Grid(int width, int height, const T* null_T = default_null_T){
 			grid_height = height;
 			grid_width = width;
-			this->null_T = null_T;
-			grid = new vector(grid_height, vector<T>(grid_width, *null_T));
+			_null_T = null_T;
+			grid = new vector(grid_height, vector<T>(grid_width, null_T));
 		};
 
 		int width(){
@@ -83,14 +86,14 @@ class Grid{
 				grid_height = height;
 				grid_width = width;
 			}
-			grid = new vector(grid_height, vector<T>(grid_width, *null_T));
+			grid = new vector(grid_height, vector<T>(grid_width, null_T));
 		};
 
 		bool initialize_with(std::function<T(int, int)> func, bool change = false, int width = default_grid_width, int height = default_grid_height){
 			if(change && (grid_height != height || grid_width != width)){
 				grid_height = height;
 				grid_width = width;
-				grid = new vector(height, vector<T>(width, *null_T));
+				grid = new vector(height, vector<T>(width, null_T));
 			}
 			for(int i = 0; i < height; i++){
 				for(int j = 0; j < width; j++){
@@ -108,13 +111,13 @@ class Grid{
 			return grid->end();
 		}
 
-		T& operator[](size_t index1, size_t index2){
+		T* operator[](size_t index1, size_t index2){
 			if(0 <= index1 && index1 < grid_height && 0 <= index2 && index2 < grid_width){ // I made this operator to make sure the grid is kept square. I don't want to ever allow a push_back or erase, I'd only like them to be able to get or set 
 				return (*grid)[index1][index2];
 			}
 			else{
 				//cout << "OUT OF RANGE: i = " << index1 << " and j = " << index2 << " AND GRID HEIGHT = " << grid_height << " AND GRID WIDTH = " << grid_width << endl;
-				return *(const_cast<T*>(null_T));
+				return const_cast<T*>(null_T);
 			}
 		};
 
@@ -215,9 +218,9 @@ class Frame{
 			return temp;
 		}*/
 
-		static Pixel make_default_pixel(int i = -1, int j = -1){// The superfluous ints are to work with the grid initialize_with method.
+		static Pixel* make_default_pixel(int i = -1, int j = -1){// The superfluous ints are to work with the grid initialize_with method.
 			//return nullpix;
-			return Pixel(0);
+			return new Pixel(0);
 		}
 
 	public:
@@ -238,23 +241,23 @@ class Frame{
 		}
 
 		int get_width(){
-			return this->frame_width;
+			return frame_width;
 		}
 
 		int get_height(){
-			return this->frame_height;
+			return frame_height;
 		}
 
 		Grid<Pixel> get_rows(){
 			return rows;
 		}
 
-		Pixel get_pixel(int i, int j){
+		Pixel* get_pixel(int i, int j){
 			return rows[i, j];
 		}
 
-		bool change_pixel(Pixel pixel, int ind_x, int ind_y){ /* This might do better as private but I'll make it so when I know it is easy to draw in other ways. This is mostly an internal method. */
-			if(!pixel.check_valid_pixel() || pixel.is_blank()){
+		bool change_pixel(Pixel* pixel, int ind_x, int ind_y){ /* This might do better as private but I'll make it so when I know it is easy to draw in other ways. This is mostly an internal method. */
+			if(!pixel->check_valid_pixel() || pixel->is_blank()){
 				return false;
 			}
 			//if(!pixel.is_blank()){
@@ -271,7 +274,7 @@ class Frame{
 				Grid<Pixel> frame2_rows = frame2.get_rows();
 				for(int i = 0; i < frame1.get_height(); i ++){
 					for(int j = 0; j < frame1.get_width(); j++){
-						if(!frame2_rows[i, j].is_blank()){
+						if(!frame2_rows[i, j]->is_blank()){
 							frame1.change_pixel(frame2_rows[i, j], i, j);
 						}
 					}
@@ -288,7 +291,7 @@ class Frame{
 				Grid<Pixel> frame_rows = frame.get_rows();
 				for(int i = 0; i < frame_height; i ++){
 					for(int j = 0; j < frame_width; j++){
-						if(!frame_rows[i, j].is_blank()){
+						if(!frame_rows[i, j]->is_blank()){
 							change_pixel(frame_rows[i, j], i, j);
 						}
 					}
@@ -296,7 +299,8 @@ class Frame{
 				return true;
 			}
 		}
-		bool draw_on(Drawable& drawable); // DEFINED AFTER DRAWABLE
+		bool draw_on(Drawable* drawable); // DEFINED AFTER DRAWABLE
+		bool draw_on(vector<Drawable*> drawable); // DEFINED AFTER DRAWABLE
 };
 
 class Drawable{
@@ -304,29 +308,21 @@ class Drawable{
 	protected:
 		static constexpr double pi = std::numbers::pi;
 		Grid<Pixel> image;
-		int rows;
-		int cols;
-		float scale_factor; // If negative, will be flipped.
-		float current_pos_x;
-		float current_pos_y;
-		float rotation;
-		bool from_center;
-		Frame internal_frame = Frame(false);
+		int _rows;
+		int _cols;
+		float _scale_factor; // If negative, will be flipped.
+		float _current_pos_x;
+		float _current_pos_y;
+		float _rotation;
+		bool _from_center;
+		Frame _internal_frame = Frame(false);
 	//protected:
 		static constexpr Pixel nullpix_obj = Pixel(-1);
 		static constexpr Pixel* nullpix = const_cast<Pixel*>(&(nullpix_obj)); /* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
 		std::string mode = "FRAME"; // Can be "FRAME", "EQUATION", or "DOT_NEAREST". This is how the Drawable is drawn. For a FRAME mode, the internal_frame is just blitted onto 
 	public:
-		Drawable(Grid<Pixel> image, bool from_center = false, float rotate = 0.0, float scale_factor = 1.0, float current_pos_x = 0, float current_pos_y = 0){
-			rows = image.height();
-			cols = image.width();
-			this->image = image;
-			this->scale_factor = scale_factor;
-			this->current_pos_x = current_pos_x;
-			this->current_pos_y = current_pos_y;
-			this->rotation = rotate;
-			this->from_center = from_center;
-		}
+		Drawable(Grid<Pixel> image, bool from_center = false, float rotate = 0.0, float scale_factor = 1.0, float current_pos_x = 0, float current_pos_y = 0)
+			: _image(image), _rows(image.height()), _cols(image.width()), _current_pos_x(current_pos_x), _current_pos_y(current_pos_y), _rotation(rotate), _from_center(from_center){}
 
 		std::string get_mode(){
 			return mode;
@@ -374,7 +370,7 @@ class Drawable{
 			float oldtempx = tempx;
 			float oldtempy = tempy;
 
-			float olddist = sqrt(pow(tempx - offset_x, 2) + pow(tempy - offset_y, 2));
+			//float olddist = sqrt(pow(tempx - offset_x, 2) + pow(tempy - offset_y, 2));
 
 			//cout << "oldtempx = " << oldtempx << endl;
 			tempx = (-sin(-2 * pi * rotation) * (oldtempy - offset_y)) + ((oldtempx - offset_x) * cos(-2 * pi * rotation));
@@ -384,7 +380,7 @@ class Drawable{
 			tempx += offset_x;
 			tempy += offset_y;
 
-			float newdist = sqrt(pow(tempx - offset_x, 2) + pow(tempy - offset_y, 2));
+			//float newdist = sqrt(pow(tempx - offset_x, 2) + pow(tempy - offset_y, 2));
 
 			//cout << "Dist diff: " << newdist - olddist << endl;
 
@@ -434,10 +430,10 @@ class Drawable{
 		// In reality, this method just moves/changes the image that will be drawn via a Frame().draw_on().
 		//bool draw(Frame& frame, int x, int y, int scale, float rotation){
 		bool draw(float x = 0, float y = 0, float scale = 1, float rotation = 0){
-			this->current_pos_x = x;
-			this->current_pos_y = y;
-			this->scale_factor = scale;
-			this->rotation = rotation;
+			current_pos_x = x;
+			current_pos_y = y;
+			scale_factor = scale;
+			rotation = rotation;
 			return true;
 			//return false; // TODO: FINISH
 		}
@@ -463,12 +459,35 @@ class Drawable{
 ///////////////////////////////////// DRAW_ON DEFINITION /////////////////////////////////////////////////////////////////////////////
 
 
-inline bool Frame::draw_on(Drawable& drawable){
+inline bool Frame::draw_on(Drawable* drawable){
 	bool changed_anything = false;
 	for(int i = 0; i < frame_height; i++){
 		for(int j = 0; j < frame_width; j++){
-			Pixel pix = drawable.get_pixel(i, j);
+			Pixel pix = drawable->get_pixel(i, j);
 			changed_anything = change_pixel(pix, i, j) || changed_anything;
+		}
+	}
+	//if(drawable.get_mode() == "FRAME"){
+
+	//}
+	return changed_anything;
+}
+
+inline bool Frame::draw_on(vector<Drawable*> drawables){
+	bool changed_anything = false;
+	bool is_changed = false;
+	vector<Drawable*>::iterator count;
+	vector<Drawable*>::iterator end = drawables.end();
+	for(int i = 0; i < frame_height; i++){
+		for(int j = 0; j < frame_width; j++){
+			is_changed = false;
+			count = drawables.begin();
+			while(!is_changed && count != end){
+				Pixel pix = (*count)->get_pixel(i, j);
+				is_changed = change_pixel(pix, i, j);
+				changed_anything = is_changed || changed_anything;
+				count ++;
+			}
 		}
 	}
 	//if(drawable.get_mode() == "FRAME"){
@@ -488,9 +507,9 @@ class Output{ /* Here, we use the Singleton design pattern. */
 		int console_height;
 		Grid<Pixel> last_image;
 		Output(int width, int height){
-			this->console_width = width;
-			this->console_height = height;
-			this->last_image = Grid<Pixel>(width, height);
+			console_width = width;
+			console_height = height;
+			last_image = Grid<Pixel>(width, height);
 			cout << "\033[?25l";
 		};
 		~Output(){};
@@ -566,6 +585,7 @@ class Output{ /* Here, we use the Singleton design pattern. */
 				rownum += 1;
 			}
 			cout << std::string(2 + frame.get_width(), '-') << endl;
+			cout << flush;
 			return true;
 		}
 		static bool drawFrameEdit(Frame frame, bool prevdrawn = false){
@@ -586,6 +606,7 @@ class Output{ /* Here, we use the Singleton design pattern. */
 				}
 				rownum += 1;
 			}
+			cout << flush;
 			return true;
 		}
 };
