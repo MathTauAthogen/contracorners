@@ -43,92 +43,140 @@ unordered_map<std::string, std::string> color_codes = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-template <typename T>
-class Grid{
+template < typename T >
+class Grid {
 	private:
-		vector<vector<T*>>* grid = nullptr;
-		int grid_height;
-		int grid_width;
+		vector < vector <T*> >* _grid = nullptr;
+		
+		int _grid_height;
+		int _grid_width;
+		
 		static constexpr int default_grid_width = 10; // These are arbitrary, shouldn't ever really be used.
 		static constexpr int default_grid_height = 10; // These are arbitrary, shouldn't ever really be used.
 		
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//static constexpr T* default_null_T = new T(-1); // There's an assumption that T will have -1 as a parameter map to a null.
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		static constexpr T default_null_T_obj = T(-1);
-		static constexpr T* default_null_T = const_cast<T*>(&(default_null_T_obj)); /* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		static constexpr T default_null_T_obj = T ( -1 );
+		static constexpr T* default_null_T = const_cast < T* > ( &default_null_T_obj );
+		/* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
 
 
-		const T* _null_T;
+		T* _null_T;
 	public:
-		Grid(){
-			grid_height = 0;
-			grid_width = 0;
-		};
-		Grid(int width, int height, const T* null_T = default_null_T){
-			grid_height = height;
-			grid_width = width;
-			_null_T = null_T;
-			grid = new vector(grid_height, vector<T>(grid_width, null_T));
-		};
+		Grid ()
+		: _grid_height(0),
+		_grid_width(0)
+		{}
 
-		int width(){
-			return grid_width;
-		};
-
-		int height(){
-			return grid_height;
+		Grid (
+			int width,
+			int height,
+			T* null_T = default_null_T
+			) :
+			_grid_height ( height ),
+			_grid_width ( width ),
+			_null_T ( null_T )
+		{
+			_grid = new vector (
+					_grid_height,
+					vector < T* > (
+						_grid_width,
+						_null_T
+					)
+				);
 		}
 
-		void reset_grid(bool same_dims = true, int width = default_grid_width, int height = default_grid_height){ // This makes it hard to accidentally use default values, because they only happen if you already filled in an argument (so you won't accidentally run with no arguments and be surprised)
-			if(!same_dims){
-				grid_height = height;
-				grid_width = width;
-			}
-			grid = new vector(grid_height, vector<T>(grid_width, null_T));
+
+		int width()
+		{
+			return _grid_width;
 		};
 
-		bool initialize_with(std::function<T(int, int)> func, bool change = false, int width = default_grid_width, int height = default_grid_height){
-			if(change && (grid_height != height || grid_width != width)){
-				grid_height = height;
-				grid_width = width;
-				grid = new vector(height, vector<T>(width, null_T));
+
+		int height()
+		{
+			return _grid_height;
+		}
+
+		void reset_grid (
+			bool same_dims = true, // This makes it hard to accidentally use default values, because they only happen if you already filled in an argument (so you won't accidentally run with no arguments and be surprised)
+			int width = default_grid_width,
+			int height = default_grid_height
+			)
+		{ 
+			if ( !same_dims )
+			{
+				_grid_height = height;
+				_grid_width = width;
 			}
-			for(int i = 0; i < height; i++){
-				for(int j = 0; j < width; j++){
-					(*grid)[i][j] = func(i, j);
+
+			_grid = new vector ( _grid_height, vector < T* > ( _grid_width, _null_T ) );
+		};
+
+		bool initialize_with (
+			std::function < T* ( int, int ) > func,
+			bool change = false,
+			int width = default_grid_width,
+			int height = default_grid_height
+			)
+		{
+			if (
+				change &&
+					( 
+						_grid_height != height || 
+						_grid_width != width
+					)
+				)
+			{
+				_grid_height = height;
+				_grid_width = width;
+				_grid = new vector ( height, vector < T* > ( width, _null_T ) );
+			}
+
+			for ( int i = 0; i < _grid_height; i ++ )
+			{
+				for ( int j = 0; j < _grid_width; j ++ )
+				{
+					( *_grid ) [i] [j] = func ( i, j );
 				}
 			}
+
 			return true;
 		}
 
-		auto begin(){
-			return grid->begin();
+		auto begin()
+		{
+			return _grid -> begin();
 		}
 
-		auto end(){
-			return grid->end();
+		auto end()
+		{
+			return _grid -> end();
 		}
 
-		T* operator[](size_t index1, size_t index2){
-			if(0 <= index1 && index1 < grid_height && 0 <= index2 && index2 < grid_width){ // I made this operator to make sure the grid is kept square. I don't want to ever allow a push_back or erase, I'd only like them to be able to get or set 
-				return (*grid)[index1][index2];
+		T* & operator[] (
+			size_t index1,
+			size_t index2
+			)
+		{ // I made this operator to make sure the grid is kept square. I don't want to ever allow a push_back or erase, I'd only like them to be able to get or set 
+
+			if (
+				0 <= index1
+				&& index1 < _grid_height
+				&& 0 <= index2
+				&& index2 < _grid_width
+				)
+			{ 
+				return ( *_grid ) [index1] [index2];
 			}
-			else{
-				//cout << "OUT OF RANGE: i = " << index1 << " and j = " << index2 << " AND GRID HEIGHT = " << grid_height << " AND GRID WIDTH = " << grid_width << endl;
-				return const_cast<T*>(null_T);
+
+			else {
+				return _null_T;
 			}
+
 		};
 
-		// I don't really want a getter method that much because I don't want the size of the vector to be change-able. 
-
-		//vector<vector<T>>* get(){
-		//	return grid;
-		//};
 };
 
-struct Pixel{	
+struct Pixel {	
 	char value = ' ';
 	std::string bg_color = "clear_bg";
 	std::string fg_color = "white";
@@ -199,7 +247,7 @@ bool operator!=(const Pixel& pix1, const Pixel&pix2){
 
 class Drawable;
 
-class Frame{
+class Frame {
 	private:
 		static const int default_frame_width = experimental_width;
 		static const int default_frame_height = experimental_height;
@@ -260,9 +308,7 @@ class Frame{
 			if(!pixel->check_valid_pixel() || pixel->is_blank()){
 				return false;
 			}
-			//if(!pixel.is_blank()){
 			rows[ind_x, ind_y] = pixel;
-			//}
 			return true;
 		}
 
@@ -273,7 +319,7 @@ class Frame{
 			else{
 				Grid<Pixel> frame2_rows = frame2.get_rows();
 				for(int i = 0; i < frame1.get_height(); i ++){
-					for(int j = 0; j < frame1.get_width(); j++){
+					for(int j = 0; j < frame1.get_width(); j ++){
 						if(!frame2_rows[i, j]->is_blank()){
 							frame1.change_pixel(frame2_rows[i, j], i, j);
 						}
@@ -290,7 +336,7 @@ class Frame{
 			else{
 				Grid<Pixel> frame_rows = frame.get_rows();
 				for(int i = 0; i < frame_height; i ++){
-					for(int j = 0; j < frame_width; j++){
+					for(int j = 0; j < frame_width; j ++){
 						if(!frame_rows[i, j]->is_blank()){
 							change_pixel(frame_rows[i, j], i, j);
 						}
@@ -303,155 +349,143 @@ class Frame{
 		bool draw_on(vector<Drawable*> drawable); // DEFINED AFTER DRAWABLE
 };
 
-class Drawable{
-	//private:
+class Drawable {
+
 	protected:
+
 		static constexpr double pi = std::numbers::pi;
-		Grid<Pixel> image;
-		int _rows;
-		int _cols;
+
+		Grid < Pixel > _image;
+		
+		int _rows, _cols; // image size
+		float _current_pos_x, _current_pos_y;
+		
 		float _scale_factor; // If negative, will be flipped.
-		float _current_pos_x;
-		float _current_pos_y;
+
 		float _rotation;
-		bool _from_center;
-		Frame _internal_frame = Frame(false);
-	//protected:
-		static constexpr Pixel nullpix_obj = Pixel(-1);
-		static constexpr Pixel* nullpix = const_cast<Pixel*>(&(nullpix_obj)); /* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
-		std::string mode = "FRAME"; // Can be "FRAME", "EQUATION", or "DOT_NEAREST". This is how the Drawable is drawn. For a FRAME mode, the internal_frame is just blitted onto 
+		bool _from_centre;
+		
+		Frame _internal_frame = Frame( false );
+
+
+		static constexpr Pixel nullpix_obj = Pixel( -1 );
+		static constexpr Pixel* nullpix = const_cast <Pixel*> ( &nullpix_obj );
+		/* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
+		
 	public:
-		Drawable(Grid<Pixel> image, bool from_center = false, float rotate = 0.0, float scale_factor = 1.0, float current_pos_x = 0, float current_pos_y = 0)
-			: _image(image), _rows(image.height()), _cols(image.width()), _current_pos_x(current_pos_x), _current_pos_y(current_pos_y), _rotation(rotate), _from_center(from_center){}
 
-		std::string get_mode(){
-			return mode;
+		// CONSTRUCTOR
+		Drawable (
+			Grid < Pixel > image,
+			bool from_centre = false,
+			float rotate = 0,
+			float scale_factor = 1,
+			float current_pos_x = 0,
+			float current_pos_y = 0
+			) :
+			_image ( image ),
+			_rows ( image.height() ),
+			_cols ( image.width() ),
+			_current_pos_x ( current_pos_x ),
+			_current_pos_y ( current_pos_y ),
+			_rotation ( rotate ),
+			_from_centre ( from_centre )
+		{}
+
+
+		Frame& get_frame ()
+		{
+			return _internal_frame;
 		}
 
-		Frame& get_frame(){
-			return internal_frame;
-		}
 
-		pair<float, float> transform(int i, int j){
-			float tempx = i;
-			float tempy = j;
+		pair < float, float > transform ( float x, float y )
+		{
 
-			if(scale_factor == 0){
-				return make_pair(-1, -1); // The default error value
+			if( _scale_factor == 0 ){ return {-1, -1}; } // The default error value, shouldn't happen
+
+
+			// First, shift into place.
+
+			x = x - _current_pos_x;
+			y = y - _current_pos_y;
+
+
+			if( _scale_factor < 0 ){ 
+				
+				// Flip
+				x -= _rows;
+				y -= _rows;
+			
 			}
 
-			// Now, shift into place.
-			tempx = tempx - current_pos_x;
-			tempy = tempy - current_pos_y;
 
 			// Rescale.
 
-			if(scale_factor > 0){
-				tempx = tempx / scale_factor;
-				tempy = tempy / scale_factor;
-			}
-			else if(scale_factor < 0){
-				tempx = (tempx - rows) / scale_factor;
-				tempy = (tempy - cols) / scale_factor;
-			}
+			x /= _scale_factor;
+			y /= _scale_factor;
 
-			if(from_center){
-				tempx += rows/2.0;
-				tempy += cols/2.0;
-			}
 
-			// Now, rotate. We rotate about the centre of the image, (rows/2, cols/2). We have to rotate backwards to make it so that when we access the rotated image of (i, j), we really access (i. j) as we would like.
+			float centre_offset_x = _rows / 2.0;
+			float centre_offset_y = _cols / 2.0;
+
+
+			// If measuring from the centre, shift so the centre is at 0,0.
+
+			if( _from_centre ){ x += centre_offset_x; y += centre_offset_y; }
+
+
+
+			// Now, rotate. We rotate about the centre of the image.
+			// We have to rotate backwards. This is so that when we access the rotated image of (x, y), we instead access (x. y) as we would like.
 
 			//Here, we define rotation = 1 as a full 360 degree rotation.
 
-			float offset_x = rows/2.0;
-			float offset_y = cols/2.0;
+			float offset_x = x - centre_offset_x;
+			float offset_y = y - centre_offset_y;
 
-			float oldtempx = tempx;
-			float oldtempy = tempy;
+			x = offset_x * cos( -2 * pi * _rotation )
+				- offset_y * sin( -2 * pi * _rotation );
 
-			//float olddist = sqrt(pow(tempx - offset_x, 2) + pow(tempy - offset_y, 2));
+			y = offset_x * sin( -2 * pi * _rotation )
+				+ offset_y * cos( -2 * pi * _rotation );
 
-			//cout << "oldtempx = " << oldtempx << endl;
-			tempx = (-sin(-2 * pi * rotation) * (oldtempy - offset_y)) + ((oldtempx - offset_x) * cos(-2 * pi * rotation));
-			tempy = (sin(-2 * pi * rotation) * (oldtempx - offset_x)) + ((oldtempy - offset_y) * cos(-2 * pi * rotation));
-			//cout << "tempx = " << tempx << endl;
 
-			tempx += offset_x;
-			tempy += offset_y;
+			// Recentre
 
-			//float newdist = sqrt(pow(tempx - offset_x, 2) + pow(tempy - offset_y, 2));
+			x += centre_offset_x;
+			y += centre_offset_y;
 
-			//cout << "Dist diff: " << newdist - olddist << endl;
-
-			//if(from_center){
-			//	tempx += rows/2.0;
-			//	tempy += cols/2.0;
-			//}
-
-			/*if(0 <= tempx && tempx < image.height() && 0 <= tempy && tempy < image.width()){
-				cout << "ORIGINAL = " << i << " AND " << j << endl;
-				cout << "tempx = " << round(tempx) << "tempy = " << round(tempy) << endl;
-				cout << "output += " << image[round(tempx), round(tempy)].visualize() << endl;
-			}*/
-
-			return make_pair(tempx, tempy);
+			return {x, y};
 		}
 
-		virtual Pixel get_pixel(int i, int j){
-			auto [tempx, tempy] = transform(i, j);
 
-			if(tempx == -1 && tempy == -1){
-				return *nullpix;
+		virtual Pixel* get_pixel ( int x, int y )
+		{
+			auto [ adjusted_x, adjusted_y ] = transform ( x, y );
+
+			if( adjusted_x == -1 && adjusted_y == -1 ) // Transform threw an error because the scale_factor was 0
+			{
+				return nullpix;
 			}
 			
-			if(mode == "FRAME"){
-				return image[round(tempx), round(tempy)];
-			}
-			else if (mode == "DOT_NEAREST"){
-				return internal_frame.get_pixel(i, j); // Placeholder
-			}
-			else{
-				return Pixel(-1); // Shouldn't happen for now, TODO: REPLACE
-			}
+			return _image [ round ( adjusted_x ), round ( adjusted_y ) ];
 		}
 
-		/*
-		Method Name: draw
-		Description: 
-		Parameters:
-		x = x-coordinate to place the image, which is the top left corner.
-		y = y-coordinate to place the image, which is the top left corner.
-		scale = amount to compress the image. If there is a majority symbol in the ASCII art, it is the value of the pixel - otherwise it is a fixed arbitrary symbol among those present.
-		rotation = a percent to rotate by. The method snaps this to a multiple of 0.25 (so a 90 degree turn) for ASCII reasons.
-		flip = whether the image is flipped.
-		*/
 
-		// In reality, this method just moves/changes the image that will be drawn via a Frame().draw_on().
-		//bool draw(Frame& frame, int x, int y, int scale, float rotation){
-		bool draw(float x = 0, float y = 0, float scale = 1, float rotation = 0){
-			current_pos_x = x;
-			current_pos_y = y;
-			scale_factor = scale;
-			rotation = rotation;
+		bool move ( float x = 0, float y = 0, float scale = 1, float rotation = 0 )
+		{
+			if( scale == 0 )
+			{
+				return false;
+			}
+
+			_current_pos_x = x;
+			_current_pos_y = y;
+			_scale_factor = scale;
+			_rotation = rotation;
+
 			return true;
-			//return false; // TODO: FINISH
-		}
-
-		/*
-		Method Name: load_points
-		Parameters:
-		points = a vector of [x, y] points.
-
-		scale_factor = amount to compress the image. If there is a majority symbol in the ASCII art, it is the value of the pixel - otherwise it is a fixed arbitrary symbol among those present.
-		flip = whether the image is flipped.
-		*/
-		bool load_points(vector<int[2]> points, float delay, int scale_factor, bool flip){
-			return false; // TODO: FINISH
-		}
-
-		bool compute_splines(vector<int[2]> points, vector<int[2]> momenta, vector<int[2]> accels){
-			return false; // TODO: FINISH
 		}
 };
 
@@ -459,160 +493,182 @@ class Drawable{
 ///////////////////////////////////// DRAW_ON DEFINITION /////////////////////////////////////////////////////////////////////////////
 
 
-inline bool Frame::draw_on(Drawable* drawable){
+inline bool Frame::draw_on ( Drawable* drawable )
+{
 	bool changed_anything = false;
-	for(int i = 0; i < frame_height; i++){
-		for(int j = 0; j < frame_width; j++){
-			Pixel pix = drawable->get_pixel(i, j);
-			changed_anything = change_pixel(pix, i, j) || changed_anything;
+
+	for( int i = 0; i < frame_height; i ++ )
+	{
+		for( int j = 0; j < frame_width; j ++ )
+		{
+			Pixel* pix = drawable->get_pixel ( i, j );
+			changed_anything = change_pixel ( pix, i, j ) || changed_anything;
 		}
 	}
-	//if(drawable.get_mode() == "FRAME"){
 
-	//}
 	return changed_anything;
 }
 
-inline bool Frame::draw_on(vector<Drawable*> drawables){
-	bool changed_anything = false;
-	bool is_changed = false;
-	vector<Drawable*>::iterator count;
-	vector<Drawable*>::iterator end = drawables.end();
-	for(int i = 0; i < frame_height; i++){
-		for(int j = 0; j < frame_width; j++){
+inline bool Frame::draw_on ( vector < Drawable* > drawables )
+{
+	bool changed_anything = false, is_changed = false;
+
+	vector < Drawable* >::iterator count = drawables.begin(), end = drawables.end();
+
+	for( int i = 0; i < frame_height; i ++ )
+	{
+		for( int j = 0; j < frame_width; j ++ )
+		{
 			is_changed = false;
 			count = drawables.begin();
-			while(!is_changed && count != end){
-				Pixel pix = (*count)->get_pixel(i, j);
-				is_changed = change_pixel(pix, i, j);
+
+			while( !is_changed && count != end )
+			{
+				Pixel* pix = ( *count ) -> get_pixel ( i, j );
+				
+				is_changed = change_pixel( pix, i, j );
+
 				changed_anything = is_changed || changed_anything;
 				count ++;
 			}
 		}
 	}
-	//if(drawable.get_mode() == "FRAME"){
 
-	//}
 	return changed_anything;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class Output{ /* Here, we use the Singleton design pattern. */
+
+class Output {
 	private:
-		// EXPERIMENTAL VALUES FOR MY DISPLAY
-		static const int default_console_width = experimental_width;
-		static const int default_console_height = experimental_height;
-		int console_width;
-		int console_height;
-		Grid<Pixel> last_image;
-		Output(int width, int height){
-			console_width = width;
-			console_height = height;
-			last_image = Grid<Pixel>(width, height);
-			cout << "\033[?25l";
+
+		static const int _default_console_width = experimental_width;
+		static const int _default_console_height = experimental_height;
+
+		int _console_width;
+		int _console_height;
+
+		Grid<Pixel> _last_image;
+
+		Output (
+			int width,
+			int height
+			) :
+			_console_width ( width ),
+			_console_height ( height ),
+			_last_image ( 
+				Grid < Pixel > (
+					width,
+					height
+				)
+			)
+		{
+			cout << "\033[?25l"; // Make the cursor invisible
 		};
+
 		~Output(){};
-		static Output* theSingletonObject;
+
+		static Output* _theSingletonObject;
+
 	public:
-		Output(const Output&) = delete;
-		Output* operator=(const Output&) = delete;
 
-		static Output* initialize_or_return_singleton(int width = default_console_width, int height = default_console_height){
-			if(theSingletonObject == nullptr){
-				theSingletonObject = new Output(width, height);
+		Output ( const Output& ) = delete;
+		Output* operator= ( const Output& ) = delete;
+
+		static Output* initialize_or_return_singleton ( int width = _default_console_width, int height = _default_console_height )
+		{
+			if( _theSingletonObject == nullptr )
+			{
+				_theSingletonObject = new Output ( width, height );
 			}
-			return theSingletonObject;
 
+			return _theSingletonObject;
 		}
-		static void clear(){
-			/*for(int i = 0; i < theSingletonObject->console_height; i++){
-				cout << endl;
-			}*/
+
+
+		static void clear ()
+		{
 			std::cout << "\x1B[2J\x1B[H";
 		}
 
-		Grid<Pixel> get_last_image(){
-			return last_image;
+
+		Grid <Pixel> get_last_image ()
+		{
+			return _last_image;
 		}
 
 		int get_width(){
-			return console_width;
+			return _console_width;
 		}
 
 		int get_height(){
-			return console_height;
+			return _console_height;
 		}
-		/*static bool drawFrame(Frame* frame){
-			if(frame == nullptr){
-				return false;
-			}
-			else{
-				clear();
-				cout << std::string(2 + frame.get_width(), '-') << endl;
-				int rownum, colnum = 0;
-				for(auto i : frame->get_rows()){
-					cout << "|";
-					colnum = 0;
-					for(auto j : i){
-						last_image[rownum, colnum] = j;
-						colnum += 1;
-						cout << j.visualize();
-					}
-					cout << "|";
-					cout << endl;
-					rownum += 1;
-				}
-				cout << std::string(2 + frame.get_width(), '-') << endl;
-				return true;
-			}
-		}*/
-		static bool drawFrame(Frame frame){
+		
+
+		static bool drawFrame ( Frame frame )
+		{
 			clear();
+
 			cout << std::string(2 + frame.get_width(), '-') << endl;
-			int rownum = 0, colnum = 0;
-			Grid<Pixel> last_image = initialize_or_return_singleton()->get_last_image();
-			for(auto i : frame.get_rows()){
+
+			Grid<Pixel> last_image = initialize_or_return_singleton()
+				-> get_last_image();
+
+			Grid<Pixel> rows = frame.get_rows();
+
+			for( int i = 0; i < rows.height(); i ++ )
+			{
 				cout << "|";
-				colnum = 0;
-				for(auto j : i){
-					last_image[rownum, colnum] = j;
-					colnum += 1;
-					cout << j.visualize();
+
+				for(int j = 0; j < rows.width(); j ++ )
+				{
+					last_image[i, j] = rows[i, j];
+					cout << rows[i, j]->visualize();
 				}
-				cout << "|";
-				cout << endl;
-				rownum += 1;
+
+				cout << "|" << endl;
 			}
+
 			cout << std::string(2 + frame.get_width(), '-') << endl;
-			cout << flush;
+
 			return true;
 		}
-		static bool drawFrameEdit(Frame frame, bool prevdrawn = false){
-			if(!prevdrawn){
-				return drawFrame(frame);
+
+
+		static bool drawFrameEdit ( Frame frame, bool prevdrawn = false )
+		{
+			if( !prevdrawn )
+			{
+				return drawFrame( frame );
 			}
-			int rownum = 0, colnum = 0;
-			Grid<Pixel> last_image = initialize_or_return_singleton()->get_last_image();
-			for(auto i : frame.get_rows()){
-				colnum = 0;
-				for(auto j : i){
-					if(last_image[rownum, colnum] != j){
-						cout << "\033[" << (rownum + 2) << ";" << (colnum + 2) << "H";
-						cout << j.visualize();
+
+			Grid<Pixel> last_image = initialize_or_return_singleton()
+				-> get_last_image();
+
+			Grid<Pixel> rows = frame.get_rows();
+
+			int height = rows.height();
+			int width = rows.width();
+
+			for( int i = 0; i < height; i ++ )
+			{
+				for(int j = 0; j < width; j ++ )
+				{
+					if( last_image[i, j] != rows[i, j] )
+					{
+						last_image[i, j] = rows[i, j];
+						cout << "\033[" << ( i + 2 ) << ";" << ( j + 2 ) << "H";
+						cout << rows[i, j]->visualize();
 					}
-					last_image[rownum, colnum] = j;
-					colnum += 1;
 				}
-				rownum += 1;
 			}
-			cout << flush;
+
 			return true;
 		}
 };
 
-Output* Output::theSingletonObject = nullptr; // I guess I have to do this outside of the class
-
-
+Output* Output::_theSingletonObject = nullptr;
 
 #endif

@@ -51,7 +51,7 @@ int main ()
 
 	};
 
-	Grid<Pixel> image = Grid<Pixel>(7, 6);
+	Grid<Pixel> image(7, 6);
 	
 	char crude_drawing[6][7] = {
 		{' ','/','-','-','-','\\', ' '},
@@ -65,7 +65,7 @@ int main ()
 	for(int i = 0; i < 6; i ++){
 		for(int j = 0; j < 7; j++){
 			if(crude_drawing[i][j] != ' '){
-				image[i, j] = Pixel((char)(crude_drawing[i][j]), "blue", "green");
+				image[i, j] = new Pixel((char)(crude_drawing[i][j]), "blue", "green");
 			}
 		}
 	}
@@ -74,7 +74,7 @@ int main ()
 	Drawable* drawing = new Drawable(image, true);
 	//Drawable* drawing = new Circle(true, 3, 50, 50); // Drawable
 	//Drawable* drawing2 = new Circle(true, 2, 50, 100); // Drawable
-	Drawable* drawing3 = new Circle(true, 1, 50, 150); // Drawable
+	//Drawable* drawing3 = new Circle(true, 1, 50, 150); // Drawable
 	Drawable* drawing2 = new Drawable(image, true);
 	cout << output_frame.draw_on(drawing);
 	Output::drawFrameEdit(output_frame, false);
@@ -86,16 +86,16 @@ int main ()
 	while(true){
 		output_frame.clear();
 		float scaled_count = count/10;
-		//drawing.draw(50 + 50 * cos(count / 1000.0 * 2 * pi),150 + 50 * sin(count / 1000.0 * 2 * pi), 8, 0.01 * count);//, 4.5, 0.1 * count);
-		drawing2->draw(50 + 50 * cos(count / 1000.0 * 2 * pi),150 + 50 * sin(count / 1000.0 * 2 * pi), 8, 0.01 * count);//, 4.5, 0.1 * count);
-		//drawing2.draw(50, 150, 1, 0.01 * count);//, 4.5, 0.1 * count);
-		drawing->draw(50 + scaled_count, 50 + scaled_count * scaled_count, 3);
+		//drawing.move(50 + 50 * cos(count / 1000.0 * 2 * pi),150 + 50 * sin(count / 1000.0 * 2 * pi), 8, 0.01 * count);//, 4.5, 0.1 * count);
+		drawing2->move(50 + 50 * cos(count / 1000.0 * 2 * pi),150 + 50 * sin(count / 1000.0 * 2 * pi), 8, 0.01 * count);//, 4.5, 0.1 * count);
+		//drawing2.move(50, 150, 1, 0.01 * count);//, 4.5, 0.1 * count);
+		drawing->move(50 + scaled_count, 50 + scaled_count * scaled_count, 3);
 		//output_frame.draw_on(drawing3);
-		output_frame.draw_on(drawing2);
+		//output_frame.draw_on(drawing2);
 		//output_frame.draw_on(drawing);
-		//output_frame.draw_on({drawing, drawing2});
+		output_frame.draw_on({drawing, drawing2});
 		//output_frame.draw_on({drawing, drawing2, drawing3});
-		output_frame.change_pixel(Pixel((char)'%'), 50, 150);
+		output_frame.change_pixel(new Pixel((char)'%'), 50, 150);
 		while((std::chrono::system_clock::now() - start) < count * 10ms){
 			std::this_thread::sleep_for(1ms);
 		}
