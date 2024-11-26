@@ -46,7 +46,7 @@ unordered_map<std::string, std::string> color_codes = {
 template < typename T >
 class Grid {
 	private:
-		vector < vector <T*> >* _grid = nullptr;
+		vector < vector <T> >* _grid = nullptr;
 		
 		int _grid_height;
 		int _grid_width;
@@ -59,11 +59,12 @@ class Grid {
 		/* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
 
 
-		T* _null_T;
+		T _null_T;
+
 	public:
-		Grid ()
-		: _grid_height(0),
-		_grid_width(0)
+		Grid() :
+			_grid_height(0),
+			_grid_width(0)
 		{}
 
 		Grid (
@@ -73,11 +74,11 @@ class Grid {
 			) :
 			_grid_height ( height ),
 			_grid_width ( width ),
-			_null_T ( null_T )
+			_null_T ( *null_T )
 		{
 			_grid = new vector (
 					_grid_height,
-					vector < T* > (
+					vector < T > (
 						_grid_width,
 						_null_T
 					)
@@ -108,11 +109,11 @@ class Grid {
 				_grid_width = width;
 			}
 
-			_grid = new vector ( _grid_height, vector < T* > ( _grid_width, _null_T ) );
+			_grid = new vector ( _grid_height, vector < T > ( _grid_width, _null_T ) );
 		};
 
 		bool initialize_with (
-			std::function < T* ( int, int ) > func,
+			std::function < T ( int, int ) > func,
 			bool change = false,
 			int width = default_grid_width,
 			int height = default_grid_height
@@ -128,7 +129,7 @@ class Grid {
 			{
 				_grid_height = height;
 				_grid_width = width;
-				_grid = new vector ( height, vector < T* > ( width, _null_T ) );
+				_grid = new vector ( height, vector < T > ( width, _null_T ) );
 			}
 
 			for ( int i = 0; i < _grid_height; i ++ )
@@ -152,7 +153,7 @@ class Grid {
 			return _grid -> end();
 		}
 
-		T* & operator[] (
+		T & operator[] (
 			size_t index1,
 			size_t index2
 			)
@@ -248,105 +249,155 @@ bool operator!=(const Pixel& pix1, const Pixel&pix2){
 class Drawable;
 
 class Frame {
+
 	private:
-		static const int default_frame_width = experimental_width;
-		static const int default_frame_height = experimental_height;
-		int frame_width;
-		int frame_height;
-		//static constexpr Pixel* nullpix = new Pixel(-1);
-		static constexpr Pixel nullpix_obj = Pixel(-1);
-		static constexpr Pixel* nullpix = const_cast<Pixel*>(&(nullpix_obj)); /* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
-		Grid<Pixel> rows; // This is an array of, for each pixel, a struct with keys "value", "bg_color", "fg_color", and etc, among other properties, which are used in the Outputting.
 
-		/*unordered_map<std::string, char> make_default_pixel(int i = -1, int j = -1){// The superfluous ints are to work with the grid initialize_with method.
-			unordered_map<std::string, char> temp = unordered_map<std::string, char>();
-			temp.insert(make_pair("value", ' '));
-			temp.insert(make_pair("bg_color", 'w'));
-			temp.insert(make_pair("fg_color", 'b'));
-			return temp;
-		}*/
+		static const int _default_frame_width = experimental_width;
+		static const int _default_frame_height = experimental_height;
+		
+		int _frame_width;
+		int _frame_height;
+		
+		static constexpr Pixel _nullpix_obj = Pixel ( -1 );
+		static constexpr Pixel* _nullpix = const_cast < Pixel* > ( &_nullpix_obj );
+		/* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
+		
+		Grid < Pixel > _rows;
 
-		static Pixel* make_default_pixel(int i = -1, int j = -1){// The superfluous ints are to work with the grid initialize_with method.
-			//return nullpix;
-			return new Pixel(0);
+		static Pixel make_default_pixel ( int i = -1, int j = -1 ) // The superfluous ints are to work with the grid initialize_with method.
+		{
+			return Pixel ( 0 );
 		}
 
 	public:
-		Frame(bool use_blank = true, int width = default_frame_width, int height = default_frame_height){
-			frame_width = width;
-			frame_height = height;
-			rows = Grid<Pixel>(width, height, nullpix);
-			if(use_blank){
-				rows.initialize_with(make_default_pixel);
+
+		Frame(
+			bool use_blank = true,
+			int width = _default_frame_width,
+			int height = _default_frame_height
+			) : 
+			_frame_width ( width ),
+			_frame_height ( height ),
+			
+			_rows (
+				Grid < Pixel > (
+					width,
+					height,
+					_nullpix
+				)
+			)
+
+		{
+			if ( use_blank )
+			{
+				_rows.initialize_with ( make_default_pixel );
 			}
 		}
 
-		void clear(bool use_blank = true){
-			rows = Grid<Pixel>(frame_width, frame_height, nullpix);
-			if(use_blank){
-				rows.initialize_with(make_default_pixel);
+
+		void clear ( bool use_blank = true )
+		{
+			_rows = Grid < Pixel > ( _frame_width, _frame_height, _nullpix );
+			
+			if ( use_blank )
+			{
+				_rows.initialize_with ( make_default_pixel );
 			}
 		}
 
-		int get_width(){
-			return frame_width;
+		int get_width()
+		{
+			return _frame_width;
 		}
 
-		int get_height(){
-			return frame_height;
+		int get_height()
+		{
+			return _frame_height;
 		}
 
-		Grid<Pixel> get_rows(){
-			return rows;
+		Grid < Pixel > get_rows()
+		{
+			return _rows;
 		}
 
-		Pixel* get_pixel(int i, int j){
-			return rows[i, j];
+		Pixel get_pixel ( int i, int j )
+		{
+			return _rows [ i, j ];
 		}
 
-		bool change_pixel(Pixel* pixel, int ind_x, int ind_y){ /* This might do better as private but I'll make it so when I know it is easy to draw in other ways. This is mostly an internal method. */
-			if(!pixel->check_valid_pixel() || pixel->is_blank()){
+
+		bool change_pixel ( Pixel pixel, int ind_x, int ind_y )  /* This might do better as private but I'll make it so when I know it is easy to draw in other ways. This is mostly an internal method. */
+		{
+			if (
+				! pixel.check_valid_pixel() || 
+				pixel.is_blank()
+				)
+			{
 				return false;
 			}
-			rows[ind_x, ind_y] = pixel;
+
+			_rows [ ind_x, ind_y ] = pixel;
 			return true;
 		}
 
-		pair<bool, Frame> mergeFrames(Frame frame1, Frame frame2){// We do this inplace on frame1, as we are passing by value.
-			if(frame1.get_width() != frame2.get_width() || frame1.get_height() != frame2.get_height()){
-				return make_pair(false, Frame());
+
+		pair < bool, Frame > mergeFrames ( Frame frame1, Frame frame2 ) // We do this in-place on frame1, as we are passing by value.
+		{
+			if (
+				frame1.get_width() != frame2.get_width() || 
+				frame1.get_height() != frame2.get_height()
+				)
+			{
+				return { false, Frame() };
 			}
-			else{
-				Grid<Pixel> frame2_rows = frame2.get_rows();
-				for(int i = 0; i < frame1.get_height(); i ++){
-					for(int j = 0; j < frame1.get_width(); j ++){
-						if(!frame2_rows[i, j]->is_blank()){
-							frame1.change_pixel(frame2_rows[i, j], i, j);
+
+			else {
+				Grid < Pixel > frame2_rows = frame2.get_rows();
+
+				for ( int i = 0; i < frame1.get_height(); i ++ )
+				{
+					for ( int j = 0; j < frame1.get_width(); j ++ )
+					{
+						if( ! frame2_rows [ i, j ].is_blank() )
+						{
+							frame1.change_pixel ( frame2_rows[i, j], i, j );
 						}
 					}
 				}
-				return make_pair(true, frame1);
+
+				return { true, frame1 };
 			}	
 		}
 
-		bool merge_and_assign(Frame frame){
-			if(frame.get_width() != frame_width || frame.get_height() != frame_height){
+		bool merge_and_assign ( Frame frame )
+		{
+			if ( 
+				frame.get_width() != _frame_width ||
+				frame.get_height() != _frame_height
+				)
+			{
 				return false;
 			}
-			else{
-				Grid<Pixel> frame_rows = frame.get_rows();
-				for(int i = 0; i < frame_height; i ++){
-					for(int j = 0; j < frame_width; j ++){
-						if(!frame_rows[i, j]->is_blank()){
-							change_pixel(frame_rows[i, j], i, j);
+
+			else {
+				Grid < Pixel > frame_rows = frame.get_rows();
+
+				for ( int i = 0; i < _frame_height; i ++ )
+				{
+					for ( int j = 0; j < _frame_width; j ++ )
+					{
+						if ( ! frame_rows [ i, j ].is_blank() )
+						{
+							change_pixel ( frame_rows[i, j], i, j );
 						}
 					}
 				}
 				return true;
 			}
 		}
-		bool draw_on(Drawable* drawable); // DEFINED AFTER DRAWABLE
-		bool draw_on(vector<Drawable*> drawable); // DEFINED AFTER DRAWABLE
+
+		bool draw_on ( Drawable* drawable ); // DEFINED AFTER DRAWABLE
+		bool draw_on ( vector < Drawable* > drawable ); // DEFINED AFTER DRAWABLE
 };
 
 class Drawable {
@@ -365,11 +416,11 @@ class Drawable {
 		float _rotation;
 		bool _from_centre;
 		
-		Frame _internal_frame = Frame( false );
+		Frame _internal_frame = Frame ( false );
 
 
-		static constexpr Pixel nullpix_obj = Pixel( -1 );
-		static constexpr Pixel* nullpix = const_cast <Pixel*> ( &nullpix_obj );
+		static constexpr Pixel _nullpix_obj = Pixel( -1 );
+		static constexpr Pixel* _nullpix = const_cast < Pixel* > ( &_nullpix_obj );
 		/* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
 		
 	public:
@@ -393,7 +444,7 @@ class Drawable {
 		{}
 
 
-		Frame& get_frame ()
+		Frame& get_frame()
 		{
 			return _internal_frame;
 		}
@@ -460,13 +511,13 @@ class Drawable {
 		}
 
 
-		virtual Pixel* get_pixel ( int x, int y )
+		virtual Pixel get_pixel ( int x, int y )
 		{
 			auto [ adjusted_x, adjusted_y ] = transform ( x, y );
 
 			if( adjusted_x == -1 && adjusted_y == -1 ) // Transform threw an error because the scale_factor was 0
 			{
-				return nullpix;
+				return _nullpix_obj;
 			}
 			
 			return _image [ round ( adjusted_x ), round ( adjusted_y ) ];
@@ -497,11 +548,12 @@ inline bool Frame::draw_on ( Drawable* drawable )
 {
 	bool changed_anything = false;
 
-	for( int i = 0; i < frame_height; i ++ )
+	for( int i = 0; i < _frame_height; i ++ )
 	{
-		for( int j = 0; j < frame_width; j ++ )
+		for( int j = 0; j < _frame_width; j ++ )
 		{
-			Pixel* pix = drawable->get_pixel ( i, j );
+			Pixel pix = drawable->get_pixel ( i, j );
+
 			changed_anything = change_pixel ( pix, i, j ) || changed_anything;
 		}
 	}
@@ -515,16 +567,16 @@ inline bool Frame::draw_on ( vector < Drawable* > drawables )
 
 	vector < Drawable* >::iterator count = drawables.begin(), end = drawables.end();
 
-	for( int i = 0; i < frame_height; i ++ )
+	for( int i = 0; i < _frame_height; i ++ )
 	{
-		for( int j = 0; j < frame_width; j ++ )
+		for( int j = 0; j < _frame_width; j ++ )
 		{
 			is_changed = false;
 			count = drawables.begin();
 
 			while( !is_changed && count != end )
 			{
-				Pixel* pix = ( *count ) -> get_pixel ( i, j );
+				Pixel pix = ( *count ) -> get_pixel ( i, j );
 				
 				is_changed = change_pixel( pix, i, j );
 
@@ -587,22 +639,24 @@ class Output {
 		}
 
 
-		static void clear ()
+		static void clear()
 		{
 			std::cout << "\x1B[2J\x1B[H";
 		}
 
 
-		Grid <Pixel> get_last_image ()
+		Grid <Pixel> get_last_image()
 		{
 			return _last_image;
 		}
 
-		int get_width(){
+		int get_width()
+		{
 			return _console_width;
 		}
 
-		int get_height(){
+		int get_height()
+		{
 			return _console_height;
 		}
 		
@@ -613,10 +667,10 @@ class Output {
 
 			cout << std::string(2 + frame.get_width(), '-') << endl;
 
-			Grid<Pixel> last_image = initialize_or_return_singleton()
+			Grid < Pixel > last_image = initialize_or_return_singleton()
 				-> get_last_image();
 
-			Grid<Pixel> rows = frame.get_rows();
+			Grid < Pixel > rows = frame.get_rows();
 
 			for( int i = 0; i < rows.height(); i ++ )
 			{
@@ -625,7 +679,7 @@ class Output {
 				for(int j = 0; j < rows.width(); j ++ )
 				{
 					last_image[i, j] = rows[i, j];
-					cout << rows[i, j]->visualize();
+					cout << rows[i, j].visualize();
 				}
 
 				cout << "|" << endl;
@@ -660,7 +714,7 @@ class Output {
 					{
 						last_image[i, j] = rows[i, j];
 						cout << "\033[" << ( i + 2 ) << ";" << ( j + 2 ) << "H";
-						cout << rows[i, j]->visualize();
+						cout << rows[i, j].visualize();
 					}
 				}
 			}

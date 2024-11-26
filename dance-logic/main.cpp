@@ -10,14 +10,17 @@
 #include<functional>
 #include<chrono>
 #include<thread>
+#include <atomic>
+
 #include "dancebase.cpp"
 #include "shapes.cpp"
 
 using namespace std;
 
-int main ()
-{
+atomic < int > quit { 0 };
 
+void thread_1 ()
+{
 	//std::string filename = "params.txt";
 	//std::fstream s = fstream(filename);
 
@@ -65,14 +68,14 @@ int main ()
 	for(int i = 0; i < 6; i ++){
 		for(int j = 0; j < 7; j++){
 			if(crude_drawing[i][j] != ' '){
-				image[i, j] = new Pixel((char)(crude_drawing[i][j]), "blue", "green");
+				image[i, j] = Pixel((char)(crude_drawing[i][j]), "blue", "green");
 			}
 		}
 	}
 
 	Frame output_frame = Frame(false);
-	Drawable* drawing = new Drawable(image, true);
-	//Drawable* drawing = new Circle(true, 3, 50, 50); // Drawable
+	//Drawable* drawing = new Drawable(image, true);
+	Drawable* drawing = new Circle(true, 3, 50, 50); // Drawable
 	//Drawable* drawing2 = new Circle(true, 2, 50, 100); // Drawable
 	//Drawable* drawing3 = new Circle(true, 1, 50, 150); // Drawable
 	Drawable* drawing2 = new Drawable(image, true);
@@ -84,23 +87,70 @@ int main ()
 	int count = 0;
 	const double pi = std::numbers::pi;
 	while(true){
+		
+		if ( quit.load() == 1 )
+		{
+			count = 0;
+			quit.store ( 0 );
+			//return;
+		}
+		else if ( quit.load() == -1 ) 
+		{
+			cout << "DERSHUFA";
+			return;
+		}
+
 		output_frame.clear();
-		float scaled_count = count/10;
+		float scaled_count = count / 100.0;
 		//drawing.move(50 + 50 * cos(count / 1000.0 * 2 * pi),150 + 50 * sin(count / 1000.0 * 2 * pi), 8, 0.01 * count);//, 4.5, 0.1 * count);
-		drawing2->move(50 + 50 * cos(count / 1000.0 * 2 * pi),150 + 50 * sin(count / 1000.0 * 2 * pi), 8, 0.01 * count);//, 4.5, 0.1 * count);
+		drawing2->move(50 + 50 * cos(scaled_count/10 * 2 * pi),150 + 50 * sin(scaled_count/10 * 2 * pi), 8, scaled_count);//, 4.5, 0.1 * count);
 		//drawing2.move(50, 150, 1, 0.01 * count);//, 4.5, 0.1 * count);
-		drawing->move(50 + scaled_count, 50 + scaled_count * scaled_count, 3);
+		//drawing->move(50 + scaled_count, 50 + scaled_count * scaled_count, 3);
+		drawing->move(50 + scaled_count * 10, 50 + 100 * scaled_count * scaled_count, 3);
 		//output_frame.draw_on(drawing3);
 		//output_frame.draw_on(drawing2);
 		//output_frame.draw_on(drawing);
 		output_frame.draw_on({drawing, drawing2});
 		//output_frame.draw_on({drawing, drawing2, drawing3});
-		output_frame.change_pixel(new Pixel((char)'%'), 50, 150);
-		while((std::chrono::system_clock::now() - start) < count * 10ms){
+		output_frame.change_pixel(Pixel((char)'%'), 50, 150);
+		while((std::chrono::system_clock::now() - start) < count * 70ms){
 			std::this_thread::sleep_for(1ms);
 		}
 		count += 1;
 		Output::drawFrameEdit(output_frame, true);
 		//Output::drawFrame(drawing.get_frame());
 	}
-};
+}
+
+void thread_2 ()
+{
+	char the_char = getchar();
+	
+	while ( quit.load() != 0 )
+	{
+		this_thread::sleep_for (10ms);
+	}
+
+	if ( the_char == 'q' )
+	{
+		quit.store( -1 );
+	}
+	else
+	{	
+		quit.store( 1 );
+	}
+	
+}
+
+int main ()
+{
+
+	thread t1 = thread (thread_1);
+	while ( quit.load() != -1 )
+	{
+			thread t2 = thread (thread_2);
+			t2.join();
+	}
+	t1.join();
+	Output::clear();
+}
