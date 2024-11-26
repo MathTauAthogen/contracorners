@@ -14,3 +14,5 @@ Then, run with ```gdb ./a.out```, and use the command "run".
 Needs c++23 obviously (might be able to make do with c++20 I forget but I think there was one thing that is only doable in c++23).
 
 I have a ASUS Creator Laptop Q OLED, and the screen for this fits the grid relatively nicely (a bar at the bottom and right side but that is it) when I use the normal Windows Subsystem for Linux zoom out function about 4 times (I forget).
+
+I'm using the Avenir Next LT Pro font that I ripped off some website for free in the normal Powershell terminal running WSL to try and get square characters. This didn't help very much but I'll keep experimenting.
