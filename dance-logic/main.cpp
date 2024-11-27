@@ -74,11 +74,11 @@ void thread_1 ()
 	}
 
 	Frame output_frame = Frame(false);
-	//Drawable* drawing = new Drawable(image, true);
-	Drawable* drawing = new Circle(true, 3, 50, 50); // Drawable
-	//Drawable* drawing2 = new Circle(true, 2, 50, 100); // Drawable
+	//Drawable < ImageDrawable > drawing = new ImageDrawable(image, true);
+	Drawable < Shape < Circle > > drawing = new Circle(true, 3, 50, 50); // Drawable
+	Drawable < Shape < Circle > > drawing2 = new Circle(true, 2, 50, 100); // Drawable
 	//Drawable* drawing3 = new Circle(true, 1, 50, 150); // Drawable
-	Drawable* drawing2 = new Drawable(image, true);
+	//Drawable < ImageDrawable > drawing2 = new ImageDrawable(image, true);
 	cout << output_frame.draw_on(drawing);
 	Output::drawFrameEdit(output_frame, false);
 
@@ -96,25 +96,26 @@ void thread_1 ()
 		}
 		else if ( quit.load() == -1 ) 
 		{
-			cout << "DERSHUFA";
 			return;
 		}
 
 		output_frame.clear();
 		float scaled_count = count / 100.0;
 		//drawing.move(50 + 50 * cos(count / 1000.0 * 2 * pi),150 + 50 * sin(count / 1000.0 * 2 * pi), 8, 0.01 * count);//, 4.5, 0.1 * count);
-		drawing2->move(50 + 50 * cos(scaled_count/10 * 2 * pi),150 + 50 * sin(scaled_count/10 * 2 * pi), 8, scaled_count);//, 4.5, 0.1 * count);
+		drawing2.move(50 + 50 * cos(scaled_count/10 * 2 * pi),150 + 50 * sin(scaled_count/10 * 2 * pi), 8, scaled_count);//, 4.5, 0.1 * count);
 		//drawing2.move(50, 150, 1, 0.01 * count);//, 4.5, 0.1 * count);
 		//drawing->move(50 + scaled_count, 50 + scaled_count * scaled_count, 3);
-		drawing->move(50 + scaled_count * 10, 50 + 100 * scaled_count * scaled_count, 3);
+		//drawing->move(50 + scaled_count * 10, 50 + 100 * scaled_count * scaled_count, 20, scaled_count);
+		drawing.move(100 + scaled_count - 30 * pow(cos(scaled_count/10 * 2 * pi), 3), 100 + 25 * cos(scaled_count * 2 * pi), 5, scaled_count);
 		//output_frame.draw_on(drawing3);
-		//output_frame.draw_on(drawing2);
-		//output_frame.draw_on(drawing);
-		output_frame.draw_on({drawing, drawing2});
+		output_frame.draw_on(drawing2);
+		output_frame.draw_on(drawing);
+		//output_frame.draw_on({drawing, drawing2});
 		//output_frame.draw_on({drawing, drawing2, drawing3});
 		output_frame.change_pixel(Pixel((char)'%'), 50, 150);
-		while((std::chrono::system_clock::now() - start) < count * 70ms){
+		while((std::chrono::system_clock::now() - start) < count * 80ms){
 			std::this_thread::sleep_for(1ms);
+			cout << "OUT";
 		}
 		count += 1;
 		Output::drawFrameEdit(output_frame, true);

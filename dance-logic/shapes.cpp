@@ -11,24 +11,32 @@
 #include<functional>
 #include "consoleoutput.cpp"
 
-class Shape : public Drawable {
+template < typename T >
+class Shape : public Drawable < Shape < T > > {
 	
 	protected:
 
 		std::function < Pixel ( float, float ) > _getPixel;
+
+		const float _approx_const = 0.4;
+		const float _slope_const = 0.15;
+
+		Drawable < Shape < T > > * newthis = static_cast < Drawable < Shape < T > > * > (this);
+
+		static constexpr Pixel _nullpix_obj = Pixel ( -1 );
+		static constexpr Pixel* _nullpix = const_cast < Pixel* > ( &_nullpix_obj );
 	
 	public:
 
 		Shape (
 			std::function < Pixel ( float, float ) > get_the_pixel,
 			bool from_center = false,
-			float rotate = 0.0,
-			float scale_factor = 1.0,
+			float rotate = 0,
+			float scale_factor = 1,
 			float current_pos_x = 0, 
 			float current_pos_y = 0
 			) :
-			Drawable(
-				Grid < Pixel > (),
+			Drawable < Shape > (
 				from_center,
 				rotate,
 				scale_factor,
@@ -39,9 +47,9 @@ class Shape : public Drawable {
 		{}
 
 
-		virtual Pixel get_pixel ( int i, int j ) override
+		Pixel get_pixel ( int i, int j )
 		{
-			auto [x, y] = transform ( i, j );
+			auto [x, y] = newthis -> transform ( i, j );
 
 			if( x == -1 && y == -1 )
 			{
@@ -50,13 +58,19 @@ class Shape : public Drawable {
 			
 			return _getPixel ( x, y );
 		}
+
 };
 
-class Circle : public Shape {
+class Circle : public Shape < Circle > {
 
 	private:
 
 		vector < Pixel > possibilities;
+		float dist;
+		float error;
+
+		static constexpr Pixel _nullpix_obj = Pixel ( -1 );
+		static constexpr Pixel* _nullpix = const_cast < Pixel* > ( &_nullpix_obj );
 	
 	public:
 		
@@ -71,9 +85,8 @@ class Circle : public Shape {
 
 				[&](float x, float y){
 
-					float approx_const = 0.4;
-					float dist = sqrt ( pow( x, 2 ) + pow ( y, 2 ) );
-					float error = approx_const / _scale_factor;
+					dist = sqrt ( pow( x, 2 ) + pow ( y, 2 ) );
+					error = _approx_const / _scale_factor;
 
 					if (
 						1 - error <= dist && 
@@ -81,19 +94,36 @@ class Circle : public Shape {
 						)
 					{
 
-						float side_const = 0.15;
+						// De-rotate for correct symbol for real-life slope
 
-						if ( x > 0 && abs(y / x) < side_const )
+						if( _from_centre ){ x += _centre_offset_x; y += _centre_offset_y; }
+
+						offset_x = x - _centre_offset_x;
+						offset_y = y - _centre_offset_y;
+
+
+						x = offset_x * cos( 2 * pi * _rotation )
+							- offset_y * sin( 2 * pi * _rotation );
+
+						y = offset_x * sin( 2 * pi * _rotation )
+							+ offset_y * cos( 2 * pi * _rotation );
+
+						x += _centre_offset_x;
+						y += _centre_offset_y;
+						
+						// End de-rotate
+
+						if ( x > 0 && abs(y / x) < _slope_const )
 						{
 							return possibilities[0];
 						}
 
-						else if ( x < 0 && abs(y / x) < side_const )
+						else if ( x < 0 && abs(y / x) < _slope_const )
 						{
 							return possibilities[1];
 						}
 
-						else if ( y != 0 && abs(x / y)  < side_const )
+						else if ( y != 0 && abs(x / y)  < _slope_const )
 						{
 							return possibilities[2];
 						}

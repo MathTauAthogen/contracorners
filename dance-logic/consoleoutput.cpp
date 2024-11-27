@@ -32,9 +32,17 @@ Output can garbage collect its own Frames if asked, so we needn't worry about th
 
 */
 
+
+/* Values for Avenir Next LT Pro
+
 // EXPERIMENTAL VALUES FOR MY DISPLAY
 const int experimental_width = 400;
 const int experimental_height = 100;
+*/
+
+const int experimental_width = 470;
+const int experimental_height = 140;
+
 unordered_map<std::string, std::string> color_codes = {
 	{"white", "15"},{"black", "0"},{"blue", "21"},{"navy", "12"},{"green", "2"},{"green_neon", "10"}, {"clear_fg", "2m\033[39"}, {"clear_bg", "2m\033[49"}
 }; // These are 256 bit codes.
@@ -143,6 +151,37 @@ class Grid {
 			return true;
 		}
 
+		bool initialize_with (
+			T val,
+			bool change = false,
+			int width = default_grid_width,
+			int height = default_grid_height
+			)
+		{
+			if (
+				change &&
+					( 
+						_grid_height != height || 
+						_grid_width != width
+					)
+				)
+			{
+				_grid_height = height;
+				_grid_width = width;
+				_grid = new vector ( height, vector < T > ( width, _null_T ) );
+			}
+
+			for ( int i = 0; i < _grid_height; i ++ )
+			{
+				for ( int j = 0; j < _grid_width; j ++ )
+				{
+					( *_grid ) [i] [j] = val;
+				}
+			}
+
+			return true;
+		}
+
 		auto begin()
 		{
 			return _grid -> begin();
@@ -177,27 +216,39 @@ class Grid {
 
 };
 
-struct Pixel {	
+struct Pixel {
+
 	char value = ' ';
 	std::string bg_color = "clear_bg";
 	std::string fg_color = "white";
+
 	static const char default_value = ' ';
 	static constexpr std::string default_bg_color = "clear_bg";
 	static constexpr std::string default_fg_color = "white";
+
 	bool blank = true;
 	bool null = false;
-	constexpr Pixel(int bool_blank_null){
-		if (bool_blank_null == 0){
+
+	constexpr Pixel(int bool_blank_null)
+	{
+		if ( bool_blank_null == 0 )
+		{
 			blank = true;
 			null = false;
 		}
-		else{
+		else
+		{
 			blank = true;
 			null = true;
 		}
 	};
 
-	Pixel(char new_value = default_value, std::string new_bg_color = default_bg_color, std::string new_fg_color = default_fg_color){
+	Pixel (
+		char new_value = default_value,
+		std::string new_bg_color = default_bg_color,
+		std::string new_fg_color = default_fg_color
+		)
+	{
 		blank = blank && (value == new_value);
 		blank = blank && (fg_color == new_fg_color);
 		blank = blank && (bg_color == new_bg_color);
@@ -246,6 +297,7 @@ bool operator!=(const Pixel& pix1, const Pixel&pix2){
 	return (pix1.value != pix2.value) || (pix1.bg_color != pix2.bg_color) || (pix1.fg_color != pix2.fg_color) || (pix1.blank != pix2.blank) || (pix1.null != pix2.null);
 }
 
+template < typename T > // For compile-time polymorphism
 class Drawable;
 
 class Frame {
@@ -267,6 +319,11 @@ class Frame {
 		static Pixel make_default_pixel ( int i = -1, int j = -1 ) // The superfluous ints are to work with the grid initialize_with method.
 		{
 			return Pixel ( 0 );
+		}
+
+		static Pixel make_nullpix ( int i = -1, int j = -1 ) // The superfluous ints are to work with the grid initialize_with method.
+		{
+			return _nullpix_obj;
 		}
 
 	public:
@@ -297,12 +354,17 @@ class Frame {
 
 		void clear ( bool use_blank = true )
 		{
-			_rows = Grid < Pixel > ( _frame_width, _frame_height, _nullpix );
+			//_rows = Grid < Pixel > ( _frame_width, _frame_height, _nullpix );
 			
 			if ( use_blank )
 			{
 				_rows.initialize_with ( make_default_pixel );
 			}
+			else {
+				_rows.initialize_with ( _nullpix_obj );
+			}
+
+
 		}
 
 		int get_width()
@@ -396,19 +458,20 @@ class Frame {
 			}
 		}
 
-		bool draw_on ( Drawable* drawable ); // DEFINED AFTER DRAWABLE
-		bool draw_on ( vector < Drawable* > drawable ); // DEFINED AFTER DRAWABLE
+		template < typename T >
+		bool draw_on ( Drawable < T > drawable ); // DEFINED AFTER DRAWABLE
+
+		template < typename T >
+		bool draw_on ( vector < Drawable < T > > drawable ); // DEFINED AFTER DRAWABLE
 };
 
+template < typename T > // For compile-time polymorphism
 class Drawable {
 
 	protected:
 
 		static constexpr double pi = std::numbers::pi;
 
-		Grid < Pixel > _image;
-		
-		int _rows, _cols; // image size
 		float _current_pos_x, _current_pos_y;
 		
 		float _scale_factor; // If negative, will be flipped.
@@ -418,27 +481,37 @@ class Drawable {
 		
 		Frame _internal_frame = Frame ( false );
 
+		const float _centre_offset_x;
+		const float _centre_offset_y;
 
-		static constexpr Pixel _nullpix_obj = Pixel( -1 );
-		static constexpr Pixel* _nullpix = const_cast < Pixel* > ( &_nullpix_obj );
+		float offset_x;
+		float offset_y;
+
+		//static constexpr Pixel _nullpix_obj = Pixel ( -1 );
+		//static constexpr Pixel* _nullpix = const_cast < Pixel* > ( &_nullpix_obj );
+		/* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
+
+		//Pixel _nullpix_obj = Pixel ( -1 );
+		//Pixel* _nullpix = const_cast < Pixel* > ( &_nullpix_obj );
 		/* TODO: WHY THE HELL DOES THIS WORK? BUT IT DOES SOMEHOW SO LEAVE IT */
 		
 	public:
 
 		// CONSTRUCTOR
 		Drawable (
-			Grid < Pixel > image,
 			bool from_centre = false,
 			float rotate = 0,
 			float scale_factor = 1,
 			float current_pos_x = 0,
-			float current_pos_y = 0
+			float current_pos_y = 0,
+			float centre_offset_x = 0,
+			float centre_offset_y = 0
 			) :
-			_image ( image ),
-			_rows ( image.height() ),
-			_cols ( image.width() ),
+			_centre_offset_x ( centre_offset_x ),
+			_centre_offset_y ( centre_offset_y ),
 			_current_pos_x ( current_pos_x ),
 			_current_pos_y ( current_pos_y ),
+			_scale_factor ( scale_factor ),
 			_rotation ( rotate ),
 			_from_centre ( from_centre )
 		{}
@@ -465,11 +538,10 @@ class Drawable {
 			if( _scale_factor < 0 ){ 
 				
 				// Flip
-				x -= _rows;
-				y -= _rows;
+				x -= 2.0 * _centre_offset_x; // Janky replacement for _rows and _cols
+				y -= 2.0 * _centre_offset_y; // Janky replacement for _rows and _cols
 			
 			}
-
 
 			// Rescale.
 
@@ -477,23 +549,17 @@ class Drawable {
 			y /= _scale_factor;
 
 
-			float centre_offset_x = _rows / 2.0;
-			float centre_offset_y = _cols / 2.0;
-
-
 			// If measuring from the centre, shift so the centre is at 0,0.
 
-			if( _from_centre ){ x += centre_offset_x; y += centre_offset_y; }
-
-
+			if( _from_centre ){ x += _centre_offset_x; y += _centre_offset_y; }
 
 			// Now, rotate. We rotate about the centre of the image.
 			// We have to rotate backwards. This is so that when we access the rotated image of (x, y), we instead access (x. y) as we would like.
 
 			//Here, we define rotation = 1 as a full 360 degree rotation.
 
-			float offset_x = x - centre_offset_x;
-			float offset_y = y - centre_offset_y;
+			offset_x = x - _centre_offset_x;
+			offset_y = y - _centre_offset_y;
 
 			x = offset_x * cos( -2 * pi * _rotation )
 				- offset_y * sin( -2 * pi * _rotation );
@@ -504,23 +570,15 @@ class Drawable {
 
 			// Recentre
 
-			x += centre_offset_x;
-			y += centre_offset_y;
+			x += _centre_offset_x;
+			y += _centre_offset_y;
 
 			return {x, y};
 		}
 
-
-		virtual Pixel get_pixel ( int x, int y )
+		Pixel get_pixel ( int x, int y )
 		{
-			auto [ adjusted_x, adjusted_y ] = transform ( x, y );
-
-			if( adjusted_x == -1 && adjusted_y == -1 ) // Transform threw an error because the scale_factor was 0
-			{
-				return _nullpix_obj;
-			}
-			
-			return _image [ round ( adjusted_x ), round ( adjusted_y ) ];
+			return static_cast < T* > ( this ) -> get_pixel ( x, y );
 		}
 
 
@@ -540,11 +598,58 @@ class Drawable {
 		}
 };
 
+class ImageDrawable : public Drawable < ImageDrawable > {
+
+	private:
+
+		Grid < Pixel > _image;
+		
+		const int _rows, _cols; // image size
+
+		static constexpr Pixel _nullpix_obj = Pixel ( -1 );
+		static constexpr Pixel* _nullpix = const_cast < Pixel* > ( &_nullpix_obj );
+
+	public:
+
+		ImageDrawable (
+			Grid < Pixel > image,
+			bool from_centre = false,
+			float rotate = 0,
+			float scale_factor = 1,
+			float current_pos_x = 0,
+			float current_pos_y = 0
+			) :
+			_image ( image ),
+			_rows ( image.height() ),
+			_cols ( image.width() ),
+
+			Drawable (
+				from_centre,
+				rotate,
+				current_pos_x,
+				current_pos_y,
+				image.height() / 2.0,
+				image.width() / 2.0			
+			)
+		{}
+
+		Pixel get_pixel ( int x, int y )
+		{
+			auto [ adjusted_x, adjusted_y ] = transform ( x, y );
+
+			if( adjusted_x == -1 && adjusted_y == -1 ) // Transform threw an error because the scale_factor was 0
+			{
+				return _nullpix_obj;
+			}
+			
+			return _image [ round ( adjusted_x ), round ( adjusted_y ) ];
+		}
+};
 
 ///////////////////////////////////// DRAW_ON DEFINITION /////////////////////////////////////////////////////////////////////////////
 
-
-inline bool Frame::draw_on ( Drawable* drawable )
+template < typename T >
+inline bool Frame::draw_on ( Drawable < T > drawable )
 {
 	bool changed_anything = false;
 
@@ -552,7 +657,7 @@ inline bool Frame::draw_on ( Drawable* drawable )
 	{
 		for( int j = 0; j < _frame_width; j ++ )
 		{
-			Pixel pix = drawable->get_pixel ( i, j );
+			Pixel pix = drawable.get_pixel ( i, j );
 
 			changed_anything = change_pixel ( pix, i, j ) || changed_anything;
 		}
@@ -561,11 +666,13 @@ inline bool Frame::draw_on ( Drawable* drawable )
 	return changed_anything;
 }
 
-inline bool Frame::draw_on ( vector < Drawable* > drawables )
+
+template < typename T >
+inline bool Frame::draw_on ( vector < Drawable < T > > drawables )
 {
 	bool changed_anything = false, is_changed = false;
 
-	vector < Drawable* >::iterator count = drawables.begin(), end = drawables.end();
+	typename vector < Drawable < T > >::iterator count = drawables.begin(), end = drawables.end();
 
 	for( int i = 0; i < _frame_height; i ++ )
 	{
@@ -576,7 +683,7 @@ inline bool Frame::draw_on ( vector < Drawable* > drawables )
 
 			while( !is_changed && count != end )
 			{
-				Pixel pix = ( *count ) -> get_pixel ( i, j );
+				Pixel pix = ( *count ).get_pixel ( i, j );
 				
 				is_changed = change_pixel( pix, i, j );
 
