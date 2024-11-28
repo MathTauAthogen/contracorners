@@ -1,5 +1,5 @@
-#ifndef CONSOLE_OUTPUT_H
-#define CONSOLE_OUTPUT_H
+#ifndef PIX_H
+#define PIX_H
 
 #include <string>
 #include <map>

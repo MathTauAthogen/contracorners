@@ -8,8 +8,8 @@
 #include<cmath>
 #include<numbers>
 #include<functional>
-//#include "consoleoutput.cpp"
-#include "shapes.cpp"
+#include "consoleoutput.cpp"
+//#include "shapes.cpp"
 
 using namespace std;
 
