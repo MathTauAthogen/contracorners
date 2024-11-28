@@ -13,7 +13,7 @@ class Shape : public Drawable < Shape < T > > {
 	
 	protected:
 
-		std::function < Pixel ( float, float ) > _getPixel;
+		//std::function < Pixel ( float, float ) > _getPixel;
 
 		static constexpr float _approx_const = 0.4;
 		static constexpr float _slope_const = 0.15;
@@ -38,7 +38,7 @@ class Shape : public Drawable < Shape < T > > {
 				current_pos_y
 			)//,
 			//_getPixel ( get_the_pixel )
-		{			cout << "VISSY" << (_getPixel (1, 1)).visualize() << endl;  }
+		{			}//cout << "VISSY" << (_getPixel (1, 1)).visualize() << endl;  }
 
 
 		Pixel get_pixel ( int i, int j )
@@ -47,11 +47,10 @@ class Shape : public Drawable < Shape < T > > {
 
 			if( x == -1 && y == -1 )
 			{
-				return Drawable <Shape < T > >::_nullpix_obj;
+				return Drawable <Shape < T > >::_nullpix;
 			}
-			
-			cout << "HEREERERER" << endl;
-			return static_cast < Drawable < Shape < T > > * > (this) -> _getPixel ( x, y );
+
+			return static_cast < T* > (this) -> _getPixel ( x, y );
 		}
 
 };
@@ -61,14 +60,17 @@ class Circle : public Shape < Circle > {
 	private:
 
 		vector < Pixel > possibilities;
+
 		float dist;
 		float error;
 
-		Pixel _getPixel (float x, float y)
+	public:
+
+		Pixel _getPixel ( float x, float y )
 		{
 
 			dist = sqrt ( pow( x, 2 ) + pow ( y, 2 ) );
-			error = Shape < Circle > ::  _approx_const / Shape < Circle > :: _scale_factor;
+			error =  _approx_const / _scale_factor;
 
 			if (
 				1 - error <= dist && 
@@ -78,34 +80,34 @@ class Circle : public Shape < Circle > {
 
 				// De-rotate for correct symbol for real-life slope
 
-				if( Shape < Circle > :: _from_centre ){ x += Shape < Circle > :: _centre_offset_x; y += Shape < Circle > ::  _centre_offset_y; }
+				if( _from_centre ){ x += _centre_offset_x; y += _centre_offset_y; }
 
-				Shape < Circle > :: offset_x = x - Shape < Circle > :: _centre_offset_x;
-				Shape < Circle > :: offset_y = y - Shape < Circle > :: _centre_offset_y;
+				offset_x = x - _centre_offset_x;
+				offset_y = y - _centre_offset_y;
 
 
-				x = Shape < Circle > :: offset_x * cos( 2 * pi * Shape < Circle > :: _rotation )
-					- Shape < Circle > :: offset_y * sin( 2 * pi * Shape < Circle > :: _rotation );
+				x = offset_x * cos( 2 * pi * _rotation )
+					- offset_y * sin( 2 * pi * _rotation );
 
-				y = Shape < Circle > :: offset_x * sin( 2 * pi * Shape < Circle > :: _rotation )
-					+ Shape < Circle > :: offset_y * cos( 2 * pi * Shape < Circle > :: _rotation );
+				y = offset_x * sin( 2 * pi * _rotation )
+					+ offset_y * cos( 2 * pi * _rotation );
 
-				x += Shape < Circle > :: _centre_offset_x;
-				y += Shape < Circle > :: _centre_offset_y;
+				x += _centre_offset_x;
+				y += _centre_offset_y;
 				
 				// End de-rotate
 
-				if ( x > 0 && abs(y / x) < 	Shape < Circle > :: _slope_const )
+				if ( x > 0 && abs(y / x) < 	_slope_const )
 				{
 					return possibilities[0];
 				}
 
-				else if ( x < 0 && abs(y / x) < Shape < Circle > :: _slope_const )
+				else if ( x < 0 && abs(y / x) < _slope_const )
 				{
 					return possibilities[1];
 				}
 
-				else if ( y != 0 && abs(x / y)  < Shape < Circle > :: _slope_const )
+				else if ( y != 0 && abs(x / y)  < _slope_const )
 				{
 					return possibilities[2];
 				}
@@ -122,21 +124,19 @@ class Circle : public Shape < Circle > {
 				
 				else if ( x == 0 && y == 0 )
 				{
-					return Shape < Circle > :: _nullpix;
+					return _nullpix;
 				}
 
 				else {
 					cout << "WHAT?" << x << " and " << y << endl;
 				}
-				return Shape < Circle > :: _nullpix;
+				return _nullpix;
 			}
 			else{
-				return Shape < Circle > :: _nullpix;
+				return _nullpix;
 			}
 
 		}
-	
-	public:
 		
 		Circle (
 			bool from_center = false,
@@ -156,14 +156,14 @@ class Circle : public Shape < Circle > {
 				current_pos_y
 			)
 		{
-			cout << "VIS" << (Shape < Circle > :: _getPixel (1, 1)).visualize() << endl;
 			possibilities = {
 				Pixel ( '_', "blue", "green_neon" ),
-				Pixel('-', "blue", "green_neon"),
-				Pixel('|', "blue", "green_neon"),
-				Pixel('/', "blue", "green_neon"),
-				Pixel('\\', "blue", "green_neon")
+				Pixel ( '-', "blue", "green_neon" ),
+				Pixel ( '|', "blue", "green_neon" ),
+				Pixel ( '/', "blue", "green_neon" ),
+				Pixel ( '\\', "blue", "green_neon" )
 			};
+			cout << "VIS" << (_getPixel (0, 1)).visualize() << endl;
 		}
 };
 
