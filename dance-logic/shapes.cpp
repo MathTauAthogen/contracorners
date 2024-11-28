@@ -9,7 +9,7 @@
 #include<cmath>
 #include<numbers>
 #include<functional>
-#include "consoleoutput.cpp"
+#include "drawabletypes.cpp"
 
 template < typename T >
 class Shape : public Drawable < Shape < T > > {
@@ -26,7 +26,7 @@ class Shape : public Drawable < Shape < T > > {
 	public:
 
 		Shape (
-			std::function < Pixel ( float, float ) > get_the_pixel,
+			//std::function < Pixel ( float, float ) > get_the_pixel,
 			bool from_center = false,
 			float rotate = 0,
 			float scale_factor = 1,
@@ -39,8 +39,8 @@ class Shape : public Drawable < Shape < T > > {
 				scale_factor,
 				current_pos_x,
 				current_pos_y
-			),
-			_getPixel ( get_the_pixel )
+			)//,
+			//_getPixel ( get_the_pixel )
 		{			cout << "VISSY" << (_getPixel (1, 1)).visualize() << endl;  }
 
 
@@ -54,7 +54,7 @@ class Shape : public Drawable < Shape < T > > {
 			}
 			
 			cout << "HEREERERER" << endl;
-			return _getPixel ( x, y );
+			return static_cast < Drawable < Shape < T > > * > (this) -> _getPixel ( x, y );
 		}
 
 };
@@ -125,16 +125,16 @@ class Circle : public Shape < Circle > {
 				
 				else if ( x == 0 && y == 0 )
 				{
-					return Shape < Circle > :: _nullpix_obj;
+					return Shape < Circle > :: _nullpix;
 				}
 
 				else {
 					cout << "WHAT?" << x << " and " << y << endl;
 				}
-				return Shape < Circle > :: _nullpix_obj;
+				return Shape < Circle > :: _nullpix;
 			}
 			else{
-				return Shape < Circle > :: _nullpix_obj;
+				return Shape < Circle > :: _nullpix;
 			}
 
 		}
@@ -150,7 +150,7 @@ class Circle : public Shape < Circle > {
 			) :
 			Shape <Circle> (
 
-				_getPixel,
+				//s_getPixel,
 
 				from_center,
 				rotation,
@@ -161,16 +161,11 @@ class Circle : public Shape < Circle > {
 		{
 			cout << "VIS" << (Shape < Circle > :: _getPixel (1, 1)).visualize() << endl;
 			possibilities = {
-				Pixel (1),
-				Pixel (1),
-				Pixel (1),
-				Pixel (1),
-				Pixel (1)
-				/*Pixel ( '_', "blue", "green_neon" ),
+				Pixel ( '_', "blue", "green_neon" ),
 				Pixel('-', "blue", "green_neon"),
 				Pixel('|', "blue", "green_neon"),
 				Pixel('/', "blue", "green_neon"),
-				Pixel('\\', "blue", "green_neon")*/
+				Pixel('\\', "blue", "green_neon")
 			};
 		}
 };

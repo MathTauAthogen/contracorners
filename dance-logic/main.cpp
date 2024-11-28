@@ -13,7 +13,9 @@
 #include <atomic>
 
 #include "dancebase.cpp"
-//#include "shapes.cpp"
+
+#include "consoleoutput.cpp"
+#include "shapes.cpp"
 
 using namespace std;
 
