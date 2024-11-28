@@ -1,15 +1,6 @@
- #include <iostream>
-#include <fstream>
 #include <string>
-#include <map>
 #include <vector>
-#include<unordered_map>
 #include<queue>
-#include<cmath>
-#include<numbers>
-#include<functional>
-#include "consoleoutput.cpp"
-//#include "shapes.cpp"
 
 using namespace std;
 

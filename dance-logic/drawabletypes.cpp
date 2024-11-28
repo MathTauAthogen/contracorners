@@ -1,15 +1,6 @@
 #ifndef DBLE_TYPES_H
 #define DBLE_TYPES_H
 
-#include <string>
-#include <map>
-#include <vector>
-#include <unordered_map>
-#include <queue>
-#include <cmath>
-#include <numbers>
-#include <functional>
-
 #include "drawable.cpp"
 
 

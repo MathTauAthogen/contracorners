@@ -1,14 +1,8 @@
 #ifndef DBLE_H
 #define DBLE_H
 
-#include <string>
-#include <map>
 #include <vector>
-#include <unordered_map>
-#include <queue>
-#include <cmath>
 #include <numbers>
-#include <functional>
 
 #include "grid.cpp"
 #include "pixel.cpp"

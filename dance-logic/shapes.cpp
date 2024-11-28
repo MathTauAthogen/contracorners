@@ -1,14 +1,11 @@
 #ifndef SHAPE_H
 #define SHAPE_H
 
-#include <string>
-#include <map>
 #include <vector>
-#include<unordered_map>
-#include<queue>
-#include<cmath>
-#include<numbers>
+
+// Deprecated
 #include<functional>
+
 #include "drawabletypes.cpp"
 
 template < typename T >
