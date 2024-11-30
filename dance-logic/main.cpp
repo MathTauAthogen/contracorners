@@ -72,7 +72,7 @@ void thread_1 ()
 			if(crude_drawing[i][j] != ' '){
 				image[i, j] = Pixel(crude_drawing[i][j], "blue", "green");
 			}
-		}
+		}	
 	}
 
 	cout << "IMAGING                       :" << image [0, 1].visualize() << endl;
@@ -84,6 +84,8 @@ void thread_1 ()
 	//Drawable* drawing3 = new Circle(true, 1, 50, 150); // Drawable
 	cout << "HEREING" << endl;
 	Drawable < ImageDrawable > drawing2 = ImageDrawable(image, true);
+	cout << static_cast < ImageDrawable* >(&drawing2)->isntshit << " ISN'TSHIT" << endl;
+	//static_cast < ImageDrawable* >(&drawing2)->_image.print_diag("OUTSIDE");
 	cout << "HEREING2" << endl;
 	cout << "IMAGING                       :" << drawing2.get_pixel( 2, 2 ).visualize() << endl;
 	cout << "HERE" << endl;
