@@ -1,5 +1,3 @@
-using namespace std;
-
 #include "consoleoutput.h"
 
 // THE BELOW VALUES HAVE BEEN MOVED TO drawable.cpp, EDIT THEM THERE	
@@ -10,8 +8,6 @@ using namespace std;
 const int experimental_width = 400;
 const int experimental_height = 100;
 */
-
-
 
 Output::Output (
 	int width,

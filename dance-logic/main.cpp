@@ -3,19 +3,20 @@
 #include <string>
 #include <map>
 #include <vector>
-#include<unordered_map>
-#include<queue>
-#include<cmath>
-#include<numbers>
-#include<functional>
-#include<chrono>
-#include<thread>
+#include <unordered_map>
+#include <queue>
+#include <cmath>
+#include <numbers>
+#include <functional>
+#include <chrono>
+#include <thread>
 #include <atomic>
 
-#include "dancebase.cpp"
+//#include "dancebase.cpp"
 
+//#include "shapes.h"
+#include "drawabletypes.h"
 #include "consoleoutput.h"
-#include "shapes.cpp"
 
 using namespace std;
 
@@ -43,6 +44,7 @@ void thread_1 ()
 		{"Dolly", "Lolly"},
 	};
 
+	/*
 	Dancers dancers = Dancers();
 	for(auto i : dancer_names){
 		dancers.add_to_set(i);
@@ -55,6 +57,7 @@ void thread_1 ()
 		std::cout  << "\n";
 
 	};
+	*/
 
 	Grid<Pixel> image(7, 6);
 	

@@ -6,8 +6,8 @@
 #include <atomic>
 
 
-#include "consoleoutput.cpp"
-#include "shapes.cpp"
+#include "consoleoutput.h"
+#include "shapes.h"
 
 using namespace std;
 

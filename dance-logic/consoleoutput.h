@@ -1,11 +1,13 @@
+#ifndef CONSOLE_OUTPUT_H
+#define CONSOLE_OUTPUT_H
+
 #include <string>
 #include <cmath>
 #include <numbers>
 
-#ifndef CONSOLE_OUTPUT_H
-#define CONSOLE_OUTPUT_H
+using namespace std;
 
-#include "drawable.cpp"
+#include "drawable.h"
 
 class Output {
 private:
