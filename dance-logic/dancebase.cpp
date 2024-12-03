@@ -8,7 +8,6 @@ using namespace std;
 // Beckett will be added as an option now but inoperative, and then I'll implement Beckett.
 
 
-
 class MovingDrawable{
 	private:
 		

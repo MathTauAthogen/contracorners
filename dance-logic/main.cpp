@@ -14,7 +14,7 @@
 
 #include "dancebase.cpp"
 
-#include "consoleoutput.cpp"
+#include "consoleoutput.h"
 #include "shapes.cpp"
 
 using namespace std;
