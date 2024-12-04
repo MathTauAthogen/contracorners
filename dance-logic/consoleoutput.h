@@ -43,6 +43,4 @@ public:
 
 };
 
-//extern Output* Output::_theSingletonObject; // defined in consoleoutput.cpp
-
 #endif
