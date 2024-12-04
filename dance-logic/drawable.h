@@ -129,4 +129,62 @@ class Drawable {
 		bool move ( float x = 0, float y = 0, float scale = 1, float rotation = 0 );
 };
 
+
+
+
+
+
+
+
+
+///////////////////////////////////// DRAW_ON DEFINITION /////////////////////////////////////////////////////////////////////////////
+
+template < typename T >
+inline bool Frame::draw_on ( Drawable < T > drawable )
+{
+	bool changed_anything = false;
+
+	for( int i = 0; i < _frame_height; i ++ )
+	{
+		for( int j = 0; j < _frame_width; j ++ )
+		{
+			Pixel pix = drawable.get_pixel ( i, j );
+
+			changed_anything = change_pixel ( pix, i, j ) || changed_anything;
+		}
+	}
+
+	return changed_anything;
+}
+
+
+template < typename T >
+inline bool Frame::draw_on ( vector < Drawable < T > > drawables )
+{
+	bool changed_anything = false, is_changed = false;
+
+	typename vector < Drawable < T > >::iterator count = drawables.begin(), end = drawables.end();
+
+	for( int i = 0; i < _frame_height; i ++ )
+	{
+		for( int j = 0; j < _frame_width; j ++ )
+		{
+			is_changed = false;
+			count = drawables.begin();
+
+			while( !is_changed && count != end )
+			{
+				Pixel pix = ( *count ).get_pixel ( i, j );
+				
+				is_changed = change_pixel( pix, i, j );
+
+				changed_anything = is_changed || changed_anything;
+				count ++;
+			}
+		}
+	}
+
+	return changed_anything;
+}
+
 #endif

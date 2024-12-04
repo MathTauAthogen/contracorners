@@ -146,3 +146,7 @@ T & Grid<T>::operator[] ( // I made this operator to make sure the grid is kept 
 	}
 
 }
+
+#include "pixel.h"
+
+template class Grid<Pixel>;

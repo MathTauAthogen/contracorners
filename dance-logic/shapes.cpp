@@ -135,3 +135,5 @@ Circle::Circle (
 	};
 	cout << "VIS" << (_getPixel (0, 1)).visualize() << endl;
 }
+
+template class Shape<Circle>;
