@@ -7,10 +7,7 @@
 using namespace std;
 
 
-unordered_map<string, string> color_codes = {
-	{"white", "15"},{"black", "0"},{"blue", "21"},{"navy", "12"},{"green", "2"},{"green_neon", "10"}, {"clear_fg", "2m\033[39"}, {"clear_bg", "2m\033[49"}
-}; // These are 256 bit codes.
-
+extern unordered_map<string, string> color_codes; // defined in pixel.cpp
 
 
 struct Pixel {

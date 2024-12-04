@@ -9,6 +9,8 @@ const int experimental_width = 400;
 const int experimental_height = 100;
 */
 
+Output* Output::_theSingletonObject = nullptr;
+
 Output::Output (
 	int width,
 	int height

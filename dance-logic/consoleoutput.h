@@ -43,6 +43,6 @@ public:
 
 };
 
-Output* Output::_theSingletonObject = nullptr;
+//extern Output* Output::_theSingletonObject; // defined in consoleoutput.cpp
 
 #endif
