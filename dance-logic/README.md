@@ -33,3 +33,19 @@ We also have a MovingFrame class. This class receives a vector of MovingDrawable
 it asks each MovingDrawable to pop from its futures until it gets to a time at or after the current time, with time 0 being the time the MovingFrame was made. If that MovingDrawable needs to be drawn now, it does so, and if the heap is empty, it removes this MovingDrawable from consideration.
 
 Output can garbage collect its own Frames if asked, so we needn't worry about that, but we can also pass by reference if we want to (but Output will lock the Frame while processing so we can't make the next frame). Thus, we pass a copy instead.
+
+# Important commands in the .bashrc
+
+```
+alias comp="clear;g++-12 -std=c++23 !(\"smallmain\").cpp -o a.out"
+alias go="comp;./a.out"
+
+alias compg="clear;g++-12 -std=c++23 !(\"smallmain\").cpp -o a.out -g"
+alias gog="compg;gdb ./a.out"
+
+alias comps="clear;g++-12 -std=c++23 !(\"main\").cpp -o a.out"
+alias gos="comps;./a.out"
+
+alias compgs="clear;g++-12 -std=c++23 !(\"main\").cpp -o a.out -g"
+alias gogs="compgs;gdb ./a.out"
+```
