@@ -4,8 +4,6 @@
 #include <string>
 #include <unordered_map>
 
-using namespace std;
-
 
 extern unordered_map<string, string> color_codes; // defined in pixel.cpp
 

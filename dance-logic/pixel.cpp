@@ -5,7 +5,7 @@ unordered_map<string, string> color_codes = {
 }; // These are 256 bit codes.
 
 
-
+using namespace std;
 
 
 Pixel::Pixel (

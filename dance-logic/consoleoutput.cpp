@@ -11,6 +11,8 @@ const int experimental_height = 100;
 
 Output* Output::_theSingletonObject = nullptr;
 
+using namespace std;
+
 Output::Output (
 	int width,
 	int height

@@ -4,9 +4,6 @@
 #include <cmath>
 #include "drawable.h"
 
-
-using namespace std;
-
 class ImageDrawable : public Drawable < ImageDrawable > {
 
 	private:

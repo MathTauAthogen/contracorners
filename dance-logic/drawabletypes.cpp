@@ -1,5 +1,7 @@
 #include "drawabletypes.h"
 
+using namespace std;
+
 ImageDrawable::ImageDrawable (
 	Grid < Pixel > & image,
 	bool from_centre,

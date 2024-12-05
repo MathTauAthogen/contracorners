@@ -5,8 +5,6 @@
 #include <cmath>
 #include <numbers>
 
-using namespace std;
-
 #include "drawable.h"
 
 class Output {

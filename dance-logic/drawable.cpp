@@ -1,5 +1,7 @@
 #include "drawable.h"
 
+using namespace std;
+
 Frame::Frame(
 	bool use_blank,
 	int width,

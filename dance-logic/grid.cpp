@@ -1,5 +1,7 @@
 #include "grid.h"
 
+using namespace std;
+
 template < typename T >
 Grid<T>::Grid() :
 	_grid_height (0),

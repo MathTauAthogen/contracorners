@@ -1,6 +1,6 @@
 #include "shapes.h"
 
-
+using namespace std;
 
 template < typename T >
 Shape<T>::Shape (

@@ -8,8 +8,6 @@
 #include "pixel.h"
 #include "grid.h"
 
-using namespace std;
-
 /* Values for Avenir Next LT Pro
 
 // EXPERIMENTAL VALUES FOR MY DISPLAY
