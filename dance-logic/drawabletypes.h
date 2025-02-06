@@ -14,8 +14,7 @@ class ImageDrawable : public Drawable < ImageDrawable > {
 
 		Grid < Pixel > _image {15, 16};
 
-
-		int isntshit = 0;
+		int isntshit;
 
 		ImageDrawable (
 			Grid < Pixel > & image,

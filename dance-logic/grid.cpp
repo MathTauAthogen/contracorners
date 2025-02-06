@@ -107,9 +107,6 @@ bool Grid<T>::initialize_with (
 	return true;
 }
 
-
-
-
 // DISPLAY DIAGNOSTICS
 
 template < typename T >
@@ -119,9 +116,6 @@ void Grid<T>::print_diag ( string id )
 	cout << " _grid.size() = " << _grid.size() << " and _grid[0].size() = " << _grid[0].size() << ". " << endl;
 	cout << "END DIAGNOSTIC \"" << id << "\"." << endl;
 }
-
-
-
 
 // OPERATOR OVERRIDES
 template < typename T >

@@ -12,7 +12,7 @@ class Grid {
 
 	private:
 
-		vector < vector < T > > _grid;
+		std::vector < std::vector < T > > _grid;
 		
 		int _grid_height;
 		int _grid_width;
@@ -34,20 +34,15 @@ class Grid {
 			T null_T = default_null_T
 			);
 
-
-
 		int width();
 
 		int height();
-
-
 
 		void reset_grid (
 			bool same_dims = true, // This makes it hard to accidentally use default values, because they only happen if you already filled in an argument (so you won't accidentally run with no arguments and be surprised)
 			int width = default_grid_width,
 			int height = default_grid_height
 			);
-
 		
 		bool initialize_with (
 			T val,
@@ -56,14 +51,7 @@ class Grid {
 			int height = default_grid_height
 			);
 
-
-
-
-		void print_diag ( string id = "GENERAL_DIAGNOSTIC" );
-
-
-
-
+		void print_diag ( std::string id = "GENERAL_DIAGNOSTIC" );
 
 		T & operator[] ( // I made this operator to make sure the grid is kept square. I don't want to ever allow a push_back or erase, I'd only like them to be able to get or set.
 			size_t index1,

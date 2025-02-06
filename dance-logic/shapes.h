@@ -38,7 +38,7 @@ class Circle : public Shape < Circle > {
 
 	private:
 
-		vector < Pixel > possibilities;
+		std::vector < Pixel > possibilities;
 
 		float dist;
 		float error;

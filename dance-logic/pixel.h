@@ -5,18 +5,18 @@
 #include <unordered_map>
 
 
-extern unordered_map<string, string> color_codes; // defined in pixel.cpp
+extern std::unordered_map<std::string, std::string> color_codes; // defined in pixel.cpp
 
 
 struct Pixel {
 
 	char value;
-	string bg_color;
-	string fg_color;
+	std::string bg_color;
+	std::string fg_color;
 
 	static const char default_value = ' ';
-	static constexpr string default_bg_color = "clear_bg";
-	static constexpr string default_fg_color = "white";
+	static constexpr std::string default_bg_color = "clear_bg";
+	static constexpr std::string default_fg_color = "white";
 
 	bool blank = true;
 	bool null = false;
@@ -35,8 +35,8 @@ struct Pixel {
 
 	explicit Pixel (
 		char new_value = default_value,
-		string new_bg_color = default_bg_color,
-		string new_fg_color = default_fg_color
+		std::string new_bg_color = default_bg_color,
+		std::string new_fg_color = default_fg_color
 		);
 
 
@@ -48,12 +48,12 @@ struct Pixel {
 
 
 
-	string visualize();
+	std::string visualize();
 
 	bool assign (
 		char new_value = default_value,
-		string new_bg_color = default_bg_color,
-		string new_fg_color = default_fg_color
+		std::string new_bg_color = default_bg_color,
+		std::string new_fg_color = default_fg_color
 		);
 
 	bool erase( bool is_null );
