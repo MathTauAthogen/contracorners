@@ -4,6 +4,8 @@
 #include <string>
 #include <cmath>
 #include <numbers>
+#include <sstream>
+#include <mutex>
 
 #include "drawable.h"
 

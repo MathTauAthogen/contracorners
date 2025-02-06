@@ -6,8 +6,7 @@
 
 #include "drawable.h"
 
-template < typename T >
-class Shape : public Drawable < Shape < T > > {
+class Shape : public Drawable {
 	
 	protected:
 
@@ -26,15 +25,11 @@ class Shape : public Drawable < Shape < T > > {
 
 
 		Pixel get_pixel ( int i, int j );
-
+		virtual Pixel _getPixel (int x, int y) = 0; 
 };
 
 
-
-
-
-
-class Circle : public Shape < Circle > {
+class Circle : public Shape {
 
 	private:
 

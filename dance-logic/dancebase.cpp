@@ -1,6 +1,6 @@
 #include <string>
 #include <vector>
-#include<queue>
+#include <queue>
 
 using namespace std;
 
@@ -137,6 +137,15 @@ class Dancers{
 		};
 };
 
+class Figure{
+	private:
+		Dancers theDancers;
+	public:
+		Figure(Dancers dancers) : theDancers () {
+
+		}
+}
+
 class Dance{
 	private:
 		Dancers theDancers;
@@ -144,6 +153,7 @@ class Dance{
 	Dance(){
 		theDancers = Dancers();
 	}
+
 
 };
 

@@ -4,7 +4,7 @@
 #include <cmath>
 #include "drawable.h"
 
-class ImageDrawable : public Drawable < ImageDrawable > {
+class ImageDrawable : public Drawable {
 
 	private:
 		
@@ -13,8 +13,6 @@ class ImageDrawable : public Drawable < ImageDrawable > {
 	public:
 
 		Grid < Pixel > _image {15, 16};
-
-		int isntshit;
 
 		ImageDrawable (
 			Grid < Pixel > & image,

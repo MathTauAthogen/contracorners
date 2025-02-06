@@ -78,22 +78,8 @@ void thread_1 ()
 		}	
 	}
 
-	cout << "IMAGING                       :" << image [0, 1].visualize() << endl;
-
 	Frame output_frame = Frame(false);
-	//Drawable < ImageDrawable > drawing = ImageDrawable(image, true);
-	//Drawable < Shape < Circle > > drawing = new Circle(true, 3, 50, 50); // Drawable
-	//Drawable < Shape < Circle > > drawing2 = new Circle(true, 2, 50, 100); // Drawable
-	//Drawable* drawing3 = new Circle(true, 1, 50, 150); // Drawable
-	cout << "HEREING" << endl;
-	Drawable < ImageDrawable >* drawing2 = new ImageDrawable(image, true);
-	cout << static_cast < ImageDrawable* >(drawing2)->isntshit << " ISN'TSHIT" << endl;
-	//static_cast < ImageDrawable* >(&drawing2)->_image.print_diag("OUTSIDE");
-	cout << "HEREING2" << endl;
-	cout << "IMAGING                       :" << drawing2->get_pixel( 2, 2 ).visualize() << endl;
-	cout << "HEREME" << endl;
-	cout << output_frame.draw_on(*static_cast < ImageDrawable* >(drawing2));//drawing2);
-	cout << "AFTER" << endl;
+	ImageDrawable drawing2 = ImageDrawable(image, true);
 	Output::drawFrameEdit(output_frame, false);
 
 	Output::initialize_or_return_singleton();
@@ -115,25 +101,15 @@ void thread_1 ()
 
 		output_frame.clear();
 		float scaled_count = count / 100.0;
-		//drawing.move(50 + 50 * cos(count / 1000.0 * 2 * pi),150 + 50 * sin(count / 1000.0 * 2 * pi), 8, 0.01 * count);//, 4.5, 0.1 * count);
-		drawing2->move(50 + 50 * cos(scaled_count/10 * 2 * pi),150 + 50 * sin(scaled_count/10 * 2 * pi), 8, scaled_count);//, 4.5, 0.1 * count);
-		//drawing2.move(50, 150, 1, 0.01 * count);//, 4.5, 0.1 * count);
-		//drawing->move(50 + scaled_count, 50 + scaled_count * scaled_count, 3);
-		//drawing->move(50 + scaled_count * 10, 50 + 100 * scaled_count * scaled_count, 20, scaled_count);
-		//drawing.move(100 + scaled_count - 30 * pow(cos(scaled_count/10 * 2 * pi), 3), 100 + 25 * cos(scaled_count * 2 * pi), 5, scaled_count);
-		//output_frame.draw_on(drawing3);
-		output_frame.draw_on(*drawing2);
-		//output_frame.draw_on(drawing);
-		//output_frame.draw_on({drawing, drawing2});
-		//output_frame.draw_on({drawing, drawing2, drawing3});
+		drawing2.move(50 + 50 * cos(scaled_count/10 * 2 * pi),150 + 50 * sin(scaled_count/10 * 2 * pi), 8, scaled_count);
+		output_frame.draw_on(drawing2);
 		output_frame.change_pixel(Pixel((char)'%'), 50, 150);
 		while((std::chrono::system_clock::now() - start) < count * 80ms){
 			std::this_thread::sleep_for(1ms);
-			//cout << "OUT";
+			cout << "OUT" << endl;
 		}
 		count += 1;
 		Output::drawFrameEdit(output_frame, true);
-		//Output::drawFrame(drawing.get_frame());
 	}
 }
 

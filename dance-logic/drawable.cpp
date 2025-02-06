@@ -19,7 +19,6 @@ Frame::Frame(
 	)
 
 {
-	cout << "MADE_FRAME" << endl;
 	if ( use_blank )
 	{
 		_rows.initialize_with ( _blankpix );
@@ -139,4 +138,100 @@ bool Frame::merge_and_assign ( Frame frame )
 		}
 		return true;
 	}
+}
+
+
+// DRAWABLE //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Drawable::Drawable (
+	bool from_centre,
+	float rotate,
+	float scale_factor,
+	float current_pos_x,
+	float current_pos_y,
+	float centre_offset_x,
+	float centre_offset_y
+	) :
+	_centre_offset_x ( centre_offset_x ),
+	_centre_offset_y ( centre_offset_y ),
+	_current_pos_x ( current_pos_x ),
+	_current_pos_y ( current_pos_y ),
+	_scale_factor ( scale_factor ),
+	_rotation ( rotate ),
+	_from_centre ( from_centre )
+{
+}
+
+		
+Frame& Drawable::get_frame()
+{
+	return _internal_frame;
+}
+
+std::pair < float, float > Drawable::transform ( float x, float y )
+{
+
+	if( _scale_factor == 0 ){ return {-1, -1}; } // The default error value, shouldn't happen
+
+
+	// First, shift into place.
+
+	x = x - _current_pos_x;
+	y = y - _current_pos_y;
+
+
+	if( _scale_factor < 0 ){ 
+		
+		// Flip
+		x -= 2.0 * _centre_offset_x; // Janky replacement for _rows and _cols
+		y -= 2.0 * _centre_offset_y; // Janky replacement for _rows and _cols
+	
+	}
+
+	// Rescale.
+
+	x /= _scale_factor;
+	y /= _scale_factor;
+
+
+	// If measuring from the centre, shift so the centre is at 0,0.
+
+	if( _from_centre ){ x += _centre_offset_x; y += _centre_offset_y; }
+
+	// Now, rotate. We rotate about the centre of the image.
+	// We have to rotate backwards. This is so that when we access the rotated image of (x, y), we instead access (x. y) as we would like.
+
+	//Here, we define rotation = 1 as a full 360 degree rotation.
+
+	offset_x = x - _centre_offset_x;
+	offset_y = y - _centre_offset_y;
+
+	x = offset_x * std::cos( -2 * pi * _rotation )
+		- offset_y * std::sin( -2 * pi * _rotation );
+
+	y = offset_x * std::sin( -2 * pi * _rotation )
+		+ offset_y * std::cos( -2 * pi * _rotation );
+
+
+	// Recentre
+
+	x += _centre_offset_x;
+	y += _centre_offset_y;
+
+	return {x, y};
+}
+
+bool Drawable::move ( float x, float y, float scale, float rotation )
+{
+	if( scale == 0 )
+	{
+		return false;
+	}
+
+	_current_pos_x = x;
+	_current_pos_y = y;
+	_scale_factor = scale;
+	_rotation = rotation;
+
+	return true;
 }

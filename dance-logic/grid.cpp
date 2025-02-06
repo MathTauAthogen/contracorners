@@ -7,7 +7,6 @@ Grid<T>::Grid() :
 	_grid_height (0),
 	_grid_width (0)
 {
-	print_diag ( "GRID_INIT_1" );
 }
 
 template < typename T >
@@ -27,7 +26,6 @@ Grid<T>::Grid (
 				_null_T
 			)
 		);
-	print_diag ( "GRID_INIT_2" );
 }
 
 // END CONSTRUCTORS
@@ -60,9 +58,7 @@ void Grid<T>::reset_grid (
 	int width,
 	int height
 	)
-{ 
-
-	print_diag ( "GRID_INIT_5" );
+{
 
 	if ( !same_dims )
 	{
@@ -82,7 +78,7 @@ bool Grid<T>::initialize_with (
 	int height
 	)
 {
-	print_diag ( "GRID_INIT_3"  );
+	//print_diag ( "GRID_INIT_3"  );
 	if (
 		change &&
 			( 
@@ -132,7 +128,7 @@ T & Grid<T>::operator[] ( // I made this operator to make sure the grid is kept 
 		)
 	{ 
 		if( index1 == 1 || index1 == 2){
-			cout << index1 << " and " << index2 << " and " << _grid_height << " and " << _grid_width << " and " << _grid.size() << endl;// " and " << _grid[0].size() << endl;
+			//cout << index1 << " and " << index2 << " and " << _grid_height << " and " << _grid_width << " and " << _grid.size() << endl;// " and " << _grid[0].size() << endl;
 		}
 		return ( _grid ) [index1] [index2];
 	}

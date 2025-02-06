@@ -2,15 +2,14 @@
 
 using namespace std;
 
-template < typename T >
-Shape<T>::Shape (
+Shape::Shape (
 	bool from_center,
 	float rotate,
 	float scale_factor,
 	float current_pos_x, 
 	float current_pos_y
 	) :
-	Drawable < Shape < T > > (
+	Drawable (
 		from_center,
 		rotate,
 		scale_factor,
@@ -19,24 +18,17 @@ Shape<T>::Shape (
 	)
 	{}
 
-template < typename T >
-Pixel Shape<T>::get_pixel ( int i, int j )
+Pixel Shape::get_pixel ( int i, int j )
 {
-	auto [x, y] = Drawable <Shape < T > >::transform ( i, j );
+	auto [x, y] = transform ( i, j );
 
 	if( x == -1 && y == -1 )
 	{
-		return Drawable <Shape < T > >::_nullpix;
+		return _nullpix;
 	}
 
-	return static_cast < T* > (this) -> _getPixel ( x, y );
+	return _getPixel ( x, y );
 }
-
-
-
-
-
-
 
 
 Pixel Circle::_getPixel ( float x, float y )
@@ -118,7 +110,7 @@ Circle::Circle (
 	float current_pos_y,
 	float rotation
 	) :
-	Shape <Circle> (
+	Shape (
 		from_center,
 		rotation,
 		scale_factor,
@@ -135,5 +127,3 @@ Circle::Circle (
 	};
 	cout << "VIS" << (_getPixel (0, 1)).visualize() << endl;
 }
-
-template class Shape<Circle>;

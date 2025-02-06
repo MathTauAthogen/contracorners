@@ -13,6 +13,8 @@ Output* Output::_theSingletonObject = nullptr;
 
 using namespace std;
 
+recursive_mutex mut{};
+
 Output::Output (
 	int width,
 	int height
@@ -65,9 +67,11 @@ int Output::get_height()
 
 bool Output::drawFrame ( Frame frame )
 {
+	unique_lock locked {mut};
+	ostringstream full{};
 	clear();
 
-	cout << string(2 + frame.get_width(), '-') << endl;
+	full << string(2 + frame.get_width(), '-') << endl;
 
 	Grid < Pixel > last_image = initialize_or_return_singleton()
 		-> get_last_image();
@@ -76,18 +80,20 @@ bool Output::drawFrame ( Frame frame )
 
 	for( int i = 0; i < rows.height(); i ++ )
 	{
-		cout << "|";
+		full << "|";
 
 		for(int j = 0; j < rows.width(); j ++ )
 		{
 			last_image[i, j] = rows[i, j];
-			cout << rows[i, j].visualize();
+			full << rows[i, j].visualize();
 		}
 
-		cout << "|" << endl;
+		full << "|" << endl;
 	}
 
-	cout << string(2 + frame.get_width(), '-') << endl;
+	full << string(2 + frame.get_width(), '-') << endl;
+
+	cout << full.str();
 
 	return true;
 }
@@ -95,6 +101,7 @@ bool Output::drawFrame ( Frame frame )
 
 bool Output::drawFrameEdit ( Frame frame, bool prevdrawn ) // prevdrawn defaults to false in header
 {
+	unique_lock locked {mut};
 	if( !prevdrawn )
 	{
 		return drawFrame( frame );
@@ -107,19 +114,43 @@ bool Output::drawFrameEdit ( Frame frame, bool prevdrawn ) // prevdrawn defaults
 
 	int height = rows.height();
 	int width = rows.width();
+	bool going;
+	string running;
+	ostringstream full{};
+	int ystart;
 
 	for( int i = 0; i < height; i ++ )
 	{
+		going = false;
+		running = "";
+
 		for(int j = 0; j < width; j ++ )
 		{
 			if( last_image[i, j] != rows[i, j] )
 			{
+				if (!going) {ystart = j;}
+				going = true;
 				last_image[i, j] = rows[i, j];
-				cout << "\033[" << ( i + 2 ) << ";" << ( j + 2 ) << "H";
-				cout << rows[i, j].visualize();
+				running += rows[i, j].visualize();
+				continue;
+				
+			}
+			if (going) {
+				full << "\033[" << ( i + 2 ) << ";" << ( ystart + 2 ) << "H";
+				full << running;
+				running = "";
+				going = false;
 			}
 		}
+		if (going) {
+			full << "\033[" << ( i + 2 ) << ";" << ( ystart + 2 ) << "H";
+			full << running;
+			running = "";
+			going = false;
+		}
 	}
+
+	cout << full.str();
 
 	return true;
 }
